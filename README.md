@@ -16,9 +16,10 @@ Bilingual (Spanish/Hebrew) system for tracking vehicle entries in parking facili
 
 ### For Developers/Clients
 
-**Read these first:**
+**Read these (in order):**
 1. [`SETUP_INSTRUCTIONS_HE.md`](SETUP_INSTRUCTIONS_HE.md) — Client setup (Google Sheet + Apps Script)
 2. [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) — Full deployment architecture & steps
+3. [`MULTI_ENVIRONMENT.md`](MULTI_ENVIRONMENT.md) — Demo + Production (managing multiple clients)
 
 ---
 
