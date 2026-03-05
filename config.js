@@ -9,7 +9,7 @@ const CONFIG = {
    * Set after Apps Script deployment (see SETUP_INSTRUCTIONS_HE.md)
    * Example: https://script.google.com/macros/d/AKfycby.../usercontent
    */
-  APPS_SCRIPT_URL: '',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzd96MPqGSAibRh1HltwhjDHqcLEVJeCl-DnfI9FRIFPwhzX0mlFlqTdaFDFyJX2pIrIA/exec',
 
   /** Placa validation */
   PLACA_MIN_LENGTH: 2,
