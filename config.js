@@ -4,7 +4,11 @@
  */
 
 const CONFIG = {
-  /** Google Apps Script Web App URL — set after deployment */
+  /**
+   * Google Apps Script Web App URL
+   * Set after Apps Script deployment (see SETUP_INSTRUCTIONS_HE.md)
+   * Example: https://script.google.com/macros/d/AKfycby.../usercontent
+   */
   APPS_SCRIPT_URL: '',
 
   /** Placa validation */

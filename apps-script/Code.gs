@@ -12,14 +12,19 @@
    Configuration
    ══════════════════════════════════════════ */
 
-/** @const {string} Google Sheet ID — set this after creating the sheet */
-const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || '';
+/**
+ * @const {string} Google Sheet ID
+ * IMPORTANT: Replace with your Google Sheet ID from the URL:
+ * https://docs.google.com/spreadsheets/d/[YOUR-SHEET-ID]/edit
+ */
+const SHEET_ID = ''; // ← SET YOUR SHEET ID HERE
 
 /** @const {string[]} Allowed origins for CORS */
 const ALLOWED_ORIGINS = [
   'http://localhost:8080',
-  'http://127.0.0.1:8080'
-  // Add production URL here after deployment
+  'http://127.0.0.1:8080',
+  'https://kopeladi.github.io', // ← GitHub Pages domain (kopeladi = your username)
+  'https://kopeladi.github.io/ParkLog' // with path
 ];
 
 /** @const {number} Max notes length */
