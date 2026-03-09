@@ -10,6 +10,25 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
 <body>
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="login-overlay" role="dialog" aria-modal="true" aria-label="Login">
+    <div class="login-card card">
+      <div class="login-logo">🅿️</div>
+      <h2 data-i18n="login.title">Acceso — CommandCenter</h2>
+      <div class="form-group">
+        <label class="form-label" for="login-username" data-i18n="login.username">Nombre de usuario</label>
+        <input type="text" id="login-username" class="form-input" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-password" data-i18n="login.password">Contraseña</label>
+        <input type="password" id="login-password" class="form-input" autocomplete="current-password">
+      </div>
+      <div id="login-error" class="form-error hidden" role="alert"></div>
+      <button id="login-btn" class="btn btn-primary btn-block">
+        <span data-i18n="login.submit">Entrar</span>
+      </button>
+    </div>
+  </div>
 
   <!-- Offline indicator -->
   <div id="offline-bar" class="offline-bar" role="alert" aria-live="polite">
@@ -39,6 +58,13 @@
   <!-- Main content -->
   <main class="page-content">
     <div class="container cc-container">
+
+      <!-- Sticky New Today Bar -->
+      <div class="cc-sticky-bar" id="cc-sticky-bar">
+        <button class="btn btn-primary cc-sticky-new-btn" id="sticky-new-today-btn">
+          ⭐ <span data-i18n="export.newToday">Nuevos hoy</span>
+        </button>
+      </div>
 
       <!-- Top bar: last updated + refresh -->
       <div class="cc-topbar">
@@ -80,26 +106,6 @@
             <div class="skeleton skeleton-text" style="width:60%;margin:auto"></div>
           </div>
           <div class="kpi-label" data-i18n="kpi.weeklyEntries">Entradas semana</div>
-        </div>
-      </section>
-
-      <!-- Charts Section -->
-      <section class="cc-charts" aria-label="Charts">
-        <div class="card cc-chart-card">
-          <div class="card-header">
-            <h3 class="card-title" data-i18n="chart.weeklyLoad">Entradas por semana</h3>
-          </div>
-          <div class="cc-chart-wrap">
-            <canvas id="chart-weekly" role="img" aria-label="Weekly entries bar chart"></canvas>
-          </div>
-        </div>
-        <div class="card cc-chart-card">
-          <div class="card-header">
-            <h3 class="card-title" data-i18n="chart.newVsKnown">Nuevos vs Conocidos</h3>
-          </div>
-          <div class="cc-chart-wrap cc-chart-doughnut">
-            <canvas id="chart-ratio" role="img" aria-label="New vs known vehicles doughnut chart"></canvas>
-          </div>
         </div>
       </section>
 
@@ -205,6 +211,26 @@
         <div id="table-no-results" class="empty-state hidden">
           <div class="empty-icon">🔍</div>
           <p class="empty-title" data-i18n="table.noResults">No se encontraron resultados</p>
+        </div>
+      </section>
+
+      <!-- Charts Section -->
+      <section class="cc-charts" aria-label="Charts">
+        <div class="card cc-chart-card">
+          <div class="card-header">
+            <h3 class="card-title" data-i18n="chart.weeklyLoad">Entradas por semana</h3>
+          </div>
+          <div class="cc-chart-wrap">
+            <canvas id="chart-weekly" role="img" aria-label="Weekly entries bar chart"></canvas>
+          </div>
+        </div>
+        <div class="card cc-chart-card">
+          <div class="card-header">
+            <h3 class="card-title" data-i18n="chart.newVsKnown">Nuevos vs Conocidos</h3>
+          </div>
+          <div class="cc-chart-wrap cc-chart-doughnut">
+            <canvas id="chart-ratio" role="img" aria-label="New vs known vehicles doughnut chart"></canvas>
+          </div>
         </div>
       </section>
 

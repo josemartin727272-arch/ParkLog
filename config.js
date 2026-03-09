@@ -37,7 +37,11 @@ const CONFIG = {
 
   /** Default language */
   DEFAULT_LANG: 'es',
-  SUPPORTED_LANGS: ['es', 'he']
+  SUPPORTED_LANGS: ['es', 'he'],
+
+  /** Simple login credentials (change after deployment) */
+  VAULT_PASSWORD: 'parklog2024',
+  CC_PASSWORD: 'admin2024'
 };
 
 Object.freeze(CONFIG);

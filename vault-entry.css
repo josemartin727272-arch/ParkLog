@@ -3,6 +3,39 @@
  * Mobile-first form layout.
  */
 
+/* ── Login Overlay ── */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-lg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.login-logo {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+}
+
+.login-card h2 {
+  margin-bottom: var(--space-xl);
+  color: var(--color-text);
+}
+
+.login-overlay.hidden {
+  display: none;
+}
+
 /* ── Layout ── */
 .ve-container {
   max-width: 480px;

@@ -9,6 +9,26 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="login-overlay" role="dialog" aria-modal="true" aria-label="Login">
+    <div class="login-card card">
+      <div class="login-logo">🅿️</div>
+      <h2 data-i18n="login.title">Acceso — VaultEntry</h2>
+      <div class="form-group">
+        <label class="form-label" for="login-username" data-i18n="login.username">Nombre de usuario</label>
+        <input type="text" id="login-username" class="form-input" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-password" data-i18n="login.password">Contraseña</label>
+        <input type="password" id="login-password" class="form-input" autocomplete="current-password">
+      </div>
+      <div id="login-error" class="form-error hidden" role="alert"></div>
+      <button id="login-btn" class="btn btn-primary btn-block">
+        <span data-i18n="login.submit">Entrar</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Offline indicator -->
   <div id="offline-bar" class="offline-bar" role="alert" aria-live="polite">
     <span>⚠️ </span><span data-i18n="msg.offline">Sin conexión</span>

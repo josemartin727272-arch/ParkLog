@@ -68,6 +68,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiCardEntries = document.getElementById('kpi-card-entries');
   const kpiCardNew = document.getElementById('kpi-card-new');
 
+  /* ── Login ── */
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginBtn = document.getElementById('login-btn');
+  const loginUsernameInput = document.getElementById('login-username');
+  const loginPasswordInput = document.getElementById('login-password');
+  const loginError = document.getElementById('login-error');
+
+  const STORAGE_CC_USER_KEY = 'parklog-cc-username';
+  let currentCCUser = localStorage.getItem(STORAGE_CC_USER_KEY) || '';
+
+  if (currentCCUser) {
+    loginOverlay.classList.add('hidden');
+    init();
+  } else {
+    const savedUser = localStorage.getItem(STORAGE_CC_USER_KEY + '-last');
+    if (savedUser) loginUsernameInput.value = savedUser;
+    loginBtn.addEventListener('click', handleCCLogin);
+    loginPasswordInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleCCLogin(); });
+  }
+
+  function handleCCLogin() {
+    const username = loginUsernameInput.value.trim();
+    const password = loginPasswordInput.value;
+    if (!username) {
+      loginError.textContent = 'Ingresa tu nombre de usuario';
+      loginError.classList.remove('hidden');
+      return;
+    }
+    if (password !== CONFIG.CC_PASSWORD) {
+      loginError.textContent = 'Contraseña incorrecta';
+      loginError.classList.remove('hidden');
+      loginPasswordInput.value = '';
+      return;
+    }
+    currentCCUser = username;
+    localStorage.setItem(STORAGE_CC_USER_KEY, username);
+    localStorage.setItem(STORAGE_CC_USER_KEY + '-last', username);
+    loginOverlay.classList.add('hidden');
+    init();
+  }
+
   /* ── State ── */
   let allVehicles = [];
   let filteredVehicles = [];
@@ -88,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 'lastSeen',    i18nKey: 'table.lastSeen',    sortable: true,   toggleable: true,  defaultVisible: true },
     { id: 'totalVisits', i18nKey: 'table.totalVisits', sortable: true,   toggleable: true,  defaultVisible: true },
     { id: 'status',      i18nKey: 'table.status',      sortable: true,   toggleable: true,  defaultVisible: true },
+    { id: 'createdBy',   i18nKey: 'table.createdBy',   sortable: true,   toggleable: true,  defaultVisible: true },
     { id: 'notes',       i18nKey: 'table.notes',       sortable: false,  toggleable: true,  defaultVisible: true },
     { id: 'actions',     i18nKey: 'table.actions',     sortable: false,  toggleable: false, defaultVisible: true }
   ];
@@ -98,12 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
      Initialization
      ══════════════════════════════════════════ */
 
-  applyTranslations();
-  lucide.createIcons();
-  setupEventListeners();
-  renderColumnToggle();
-  loadData();
-  setupOnlineOffline();
+  function init() {
+    applyTranslations();
+    lucide.createIcons();
+    setupEventListeners();
+    renderColumnToggle();
+    loadData();
+    setupOnlineOffline();
+  }
 
   /* ══════════════════════════════════════════
      Event Listeners
@@ -160,6 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!e.target.closest('.cc-exports')) {
         closeExportSubmenu();
       }
+    });
+
+    /* Sticky New Today button */
+    document.getElementById('sticky-new-today-btn').addEventListener('click', () => {
+      handleExportClick('newToday');
     });
 
     /* Export buttons */
@@ -511,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* Status badge inline on mobile */
             const mobileBadge = document.createElement('span');
-            mobileBadge.className = isNew ? 'badge badge-new' : 'badge badge-known';
+            mobileBadge.className = 'badge-mobile ' + (isNew ? 'badge badge-new' : 'badge badge-known');
             mobileBadge.textContent = isNew ? ('🟢 ' + t('badge.new')) : ('🔵 ' + t('badge.known'));
             td.appendChild(mobileBadge);
             break;
@@ -535,6 +584,10 @@ document.addEventListener('DOMContentLoaded', () => {
             td.appendChild(badge);
             break;
           }
+
+          case 'createdBy':
+            td.textContent = vehicle.created_by || 'anonymous';
+            break;
 
           case 'notes':
             td.className = 'cell-notes';

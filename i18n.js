@@ -106,6 +106,7 @@ const TRANSLATIONS = {
     'table.allDates': 'Fechas de entrada',
     'table.totalVisits': 'Total entradas',
     'table.status': 'Estado',
+    'table.createdBy': 'Registrado por',
     'table.notes': 'Notas',
     'table.actions': 'Acciones',
     'table.empty': 'No hay datos para mostrar',
@@ -141,6 +142,12 @@ const TRANSLATIONS = {
     /* History */
     'history.title': 'Historial de visitas',
     'history.close': 'Cerrar',
+
+    /* Login */
+    'login.title': 'Acceso',
+    'login.username': 'Nombre de usuario',
+    'login.password': 'Contraseña',
+    'login.submit': 'Entrar',
 
     /* Loading & Empty */
     'loading': 'Cargando...',
@@ -244,6 +251,7 @@ const TRANSLATIONS = {
     'table.allDates': 'תאריכי כניסה',
     'table.totalVisits': 'סה"כ כניסות',
     'table.status': 'סטטוס',
+    'table.createdBy': 'נרשם על ידי',
     'table.notes': 'הערות',
     'table.actions': 'פעולות',
     'table.empty': 'אין נתונים להצגה',
@@ -279,6 +287,12 @@ const TRANSLATIONS = {
     /* History */
     'history.title': 'היסטוריית ביקורים',
     'history.close': 'סגור',
+
+    /* Login */
+    'login.title': 'כניסה',
+    'login.username': 'שם משתמש',
+    'login.password': 'סיסמה',
+    'login.submit': 'כניסה',
 
     /* Loading & Empty */
     'loading': 'טוען...',

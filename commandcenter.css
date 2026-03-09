@@ -3,6 +3,57 @@
  * Dashboard-specific: charts, filters, exports, mobile card layout.
  */
 
+/* ── Login Overlay ── */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-lg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.login-logo {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+}
+
+.login-card h2 {
+  margin-bottom: var(--space-xl);
+  color: var(--color-text);
+}
+
+.login-overlay.hidden {
+  display: none;
+}
+
+/* ── Sticky New Today Bar ── */
+.cc-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg);
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cc-sticky-new-btn {
+  width: 100%;
+  font-size: 1rem;
+  padding: var(--space-md);
+  font-weight: 600;
+}
+
 /* ── Container ── */
 .cc-container {
   max-width: 1200px;
@@ -100,6 +151,11 @@
   padding: var(--space-xl);
   color: var(--color-text-muted);
   font-size: 0.875rem;
+}
+
+/* ── Mobile Badge (visible only on small screens) ── */
+.badge-mobile {
+  display: none;
 }
 
 /* ── Charts Section ── */
@@ -394,6 +450,10 @@
 
 /* ── Mobile Layout ── */
 @media (max-width: 767px) {
+  .badge-mobile {
+    display: inline-flex;
+  }
+
   .cc-charts {
     grid-template-columns: 1fr;
   }

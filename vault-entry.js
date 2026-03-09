@@ -4,6 +4,47 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  /* ── Login ── */
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginBtn = document.getElementById('login-btn');
+  const loginUsernameInput = document.getElementById('login-username');
+  const loginPasswordInput = document.getElementById('login-password');
+  const loginError = document.getElementById('login-error');
+
+  const STORAGE_USER_KEY = 'parklog-ve-username';
+  let currentUser = localStorage.getItem(STORAGE_USER_KEY) || '';
+
+  if (currentUser) {
+    loginOverlay.classList.add('hidden');
+  } else {
+    // Pre-fill username if previously used
+    const savedUser = localStorage.getItem(STORAGE_USER_KEY + '-last');
+    if (savedUser) loginUsernameInput.value = savedUser;
+  }
+
+  loginBtn.addEventListener('click', handleLogin);
+  loginPasswordInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+
+  function handleLogin() {
+    const username = loginUsernameInput.value.trim();
+    const password = loginPasswordInput.value;
+    if (!username) {
+      loginError.textContent = 'Ingresa tu nombre de usuario';
+      loginError.classList.remove('hidden');
+      return;
+    }
+    if (password !== CONFIG.VAULT_PASSWORD) {
+      loginError.textContent = 'Contraseña incorrecta';
+      loginError.classList.remove('hidden');
+      loginPasswordInput.value = '';
+      return;
+    }
+    currentUser = username;
+    localStorage.setItem(STORAGE_USER_KEY, username);
+    localStorage.setItem(STORAGE_USER_KEY + '-last', username);
+    loginOverlay.classList.add('hidden');
+  }
+
   /* ── DOM References ── */
   const placaInput = document.getElementById('placa-input');
   const placaError = document.getElementById('placa-error');
@@ -214,7 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
         result = await DataStore.saveEntry({
           placa,
           tipo: selectedTipo,
-          notes: notesInput.value.trim()
+          notes: notesInput.value.trim(),
+          createdBy: currentUser || 'anonymous'
         });
       }
 

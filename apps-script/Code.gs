@@ -61,7 +61,7 @@ function doGet(e) {
         result = getEntries(e.parameter);
         break;
       case 'getDashboardData':
-        result = getDashboardData();
+        result = getDashboardData(e.parameter);
         break;
       case 'getVehicleHistory':
         result = getVehicleHistory(e.parameter.vehicleId);
@@ -212,7 +212,7 @@ function createEntry(data) {
       now,        // last_seen
       1,          // total_visits
       notes,      // notes
-      'anonymous', // created_by
+      data.createdBy || 'anonymous', // created_by
       notes ? dateStr : '' // notes_updated
     ]);
   } else {
@@ -240,7 +240,7 @@ function createEntry(data) {
     now,        // entry_date
     timeStr,    // entry_time
     notes,      // notes_entry
-    'anonymous' // created_by
+    data.createdBy || 'anonymous' // created_by
   ]);
 
   return {
@@ -393,17 +393,18 @@ function getVehicleHistory(vehicleId) {
 /**
  * Returns aggregated dashboard data in one call.
  *
+ * @param {Object} params - Optional params with today and weekStart from client
  * @returns {{ kpis: Object, weeklyData: Array, newVsKnown: Object }}
  */
-function getDashboardData() {
+function getDashboardData(params) {
   const vehiclesSheet = getSheet('Vehicles');
   const entriesSheet = getSheet('Entries');
 
   const vehiclesData = vehiclesSheet.getDataRange().getValues();
   const entriesData = entriesSheet.getDataRange().getValues();
 
-  const today = formatDate(new Date());
-  const weekStart = getWeekStart(new Date());
+  const today = (params && params.today) ? params.today : formatDate(new Date());
+  const weekStart = (params && params.weekStart) ? params.weekStart : getWeekStart(new Date());
 
   /* ── KPIs ── */
   let entriesToday = 0;

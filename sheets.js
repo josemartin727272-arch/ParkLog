@@ -224,6 +224,25 @@ const DataStore = (() => {
   }
 
   /* ══════════════════════════════════════════
+     Private Date Helpers
+     ══════════════════════════════════════════ */
+
+  function _fmtYMD(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function _weekStartYMD(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    return _fmtYMD(d);
+  }
+
+  /* ══════════════════════════════════════════
      Public API
      ══════════════════════════════════════════ */
 
@@ -248,7 +267,8 @@ const DataStore = (() => {
       const entryData = {
         placa: (data.placa || '').toUpperCase().trim(),
         tipo: data.tipo || CONFIG.DEFAULT_VEHICLE_TYPE,
-        notes: (data.notes || '').trim()
+        notes: (data.notes || '').trim(),
+        createdBy: data.createdBy || 'anonymous'
       };
 
       try {
@@ -288,11 +308,16 @@ const DataStore = (() => {
 
     /**
      * Gets dashboard data: KPIs + chart data (cached).
+     * Passes today and weekStart client-side to avoid Apps Script timezone issues.
      *
      * @returns {Promise<{ kpis: Object, weeklyData: Array, newVsKnown: Object }>}
      */
     async getDashboardData() {
-      return getCached('dashboard', () => apiGet('getDashboardData'));
+      // Compute date strings client-side to avoid Apps Script timezone issues
+      const now = new Date();
+      const todayStr = _fmtYMD(now);
+      const weekStartStr = _weekStartYMD(now);
+      return getCached('dashboard', () => apiGet('getDashboardData', { today: todayStr, weekStart: weekStartStr }));
     },
 
     /**
