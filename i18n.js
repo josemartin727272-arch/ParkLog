@@ -13,7 +13,7 @@
 const TRANSLATIONS = {
   es: {
     /* ── Navigation ── */
-    'nav.vaultentry': 'VaultEntry',
+    'nav.vaultentry': 'ListaCarro',
     'nav.commandcenter': 'CommandCenter',
     'nav.language': 'HE 🇮🇱',
     'nav.back': 'Volver',
@@ -21,14 +21,14 @@ const TRANSLATIONS = {
     /* ── Landing Page ── */
     'app.title': 'ParkLog',
     'app.tagline': 'Sistema de gestión de estacionamiento',
-    'landing.vaultentry.title': 'VaultEntry',
+    'landing.vaultentry.title': 'ListaCarro',
     'landing.vaultentry.desc': 'Registro rápido de entrada de vehículos',
     'landing.commandcenter.title': 'CommandCenter',
     'landing.commandcenter.desc': 'Dashboard administrativo con datos y reportes',
 
     /* ── VaultEntry ── */
-    'entry.title': 'Registro de Entrada',
-    'entry.subtitle': 'רישום כניסה',
+    'entry.title': 'ListaCarro',
+    'entry.subtitle': 'בדיקת רכבים',
     'entry.placa.label': 'Número de Placa',
     'entry.placa.placeholder': 'Ej: ABC-123',
     'entry.tipo.label': 'Tipo de Vehículo',
@@ -163,7 +163,7 @@ const TRANSLATIONS = {
 
   he: {
     /* ── Navigation ── */
-    'nav.vaultentry': 'וולטאנטרי',
+    'nav.vaultentry': 'ListaCarro',
     'nav.commandcenter': 'קומנדסנטר',
     'nav.language': 'ES 🇪🇸',
     'nav.back': 'חזרה',
@@ -171,14 +171,14 @@ const TRANSLATIONS = {
     /* ── Landing Page ── */
     'app.title': 'דרכלוג',
     'app.tagline': 'מערכת ניהול כניסות רכבים לחניון',
-    'landing.vaultentry.title': 'וולטאנטרי',
+    'landing.vaultentry.title': 'ListaCarro — בדיקת רכבים',
     'landing.vaultentry.desc': 'רישום מהיר של כניסת רכבים',
     'landing.commandcenter.title': 'קומנדסנטר',
     'landing.commandcenter.desc': 'דשבורד ניהולי עם נתונים ודוחות',
 
     /* ── VaultEntry ── */
-    'entry.title': 'רישום כניסה',
-    'entry.subtitle': 'Registro de Entrada',
+    'entry.title': 'בדיקת רכבים',
+    'entry.subtitle': 'ListaCarro',
     'entry.placa.label': 'מספר לוחית',
     'entry.placa.placeholder': 'לדוגמה: ABC-123',
     'entry.tipo.label': 'סוג רכב',

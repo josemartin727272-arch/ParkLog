@@ -105,8 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const STORAGE_CC_USER_KEY = 'parklog-cc-username';
   let currentCCUser = localStorage.getItem(STORAGE_CC_USER_KEY) || '';
 
+  const headerUserBtn = document.getElementById('header-user-btn');
+
+  function showHeaderUser() {
+    if (currentCCUser && headerUserBtn) {
+      headerUserBtn.textContent = `👤 ${currentCCUser} ✕`;
+      headerUserBtn.classList.remove('hidden');
+    }
+  }
+
+  function handleSignOut() {
+    localStorage.removeItem(STORAGE_CC_USER_KEY);
+    location.reload();
+  }
+
+  if (headerUserBtn) headerUserBtn.addEventListener('click', handleSignOut);
+
   if (currentCCUser) {
     loginOverlay.classList.add('hidden');
+    showHeaderUser();
     init();
   } else {
     const savedUser = localStorage.getItem(STORAGE_CC_USER_KEY + '-last');
@@ -133,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(STORAGE_CC_USER_KEY, username);
     localStorage.setItem(STORAGE_CC_USER_KEY + '-last', username);
     loginOverlay.classList.add('hidden');
+    showHeaderUser();
     init();
   }
 

@@ -14,8 +14,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const STORAGE_USER_KEY = 'parklog-ve-username';
   let currentUser = localStorage.getItem(STORAGE_USER_KEY) || '';
 
+  const headerUserBtn = document.getElementById('header-user-btn');
+
+  function showHeaderUser() {
+    if (currentUser && headerUserBtn) {
+      headerUserBtn.textContent = `👤 ${currentUser} ✕`;
+      headerUserBtn.classList.remove('hidden');
+    }
+  }
+
+  function handleSignOut() {
+    localStorage.removeItem(STORAGE_USER_KEY);
+    location.reload();
+  }
+
+  if (headerUserBtn) headerUserBtn.addEventListener('click', handleSignOut);
+
   if (currentUser) {
     loginOverlay.classList.add('hidden');
+    showHeaderUser();
   } else {
     // Pre-fill username if previously used
     const savedUser = localStorage.getItem(STORAGE_USER_KEY + '-last');
@@ -43,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(STORAGE_USER_KEY, username);
     localStorage.setItem(STORAGE_USER_KEY + '-last', username);
     loginOverlay.classList.add('hidden');
+    showHeaderUser();
   }
 
   /* ── DOM References ── */
