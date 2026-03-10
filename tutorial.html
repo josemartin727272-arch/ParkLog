@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מדריך שימוש — ParkLog</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4F46E5;
+      --primary-light: #EEF2FF;
+      --green: #10B981;
+      --green-light: #ECFDF5;
+      --blue: #3B82F6;
+      --blue-light: #EFF6FF;
+      --text: #1E293B;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --surface: #fff;
+      --bg: #F8FAFC;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    .toc {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--primary);
+      padding: 10px 20px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .toc::-webkit-scrollbar { display: none; }
+    .toc a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 4px 10px;
+      border-radius: 20px;
+      transition: all .2s;
+    }
+    .toc a:hover { color: #fff; background: rgba(255,255,255,0.15); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+      color: #fff;
+      text-align: center;
+      padding: 56px 24px 48px;
+    }
+    .hero-logo { font-size: 3rem; margin-bottom: 12px; }
+    .hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    .hero p { font-size: 1.05rem; opacity: 0.85; max-width: 480px; margin: 0 auto; }
+
+    /* ── SECTION ── */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 56px 24px 32px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .section-num {
+      width: 40px; height: 40px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 1.5rem; font-weight: 800; }
+    .section-header p { font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+
+    .divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 0;
+    }
+
+    /* ── SCREEN CARD ── */
+    .screen-row {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .screen-row.reverse { flex-direction: row-reverse; }
+
+    .screen-info { flex: 1; min-width: 240px; }
+    .screen-info h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+    .screen-info p { color: var(--muted); font-size: 0.93rem; margin-bottom: 14px; }
+
+    .callout-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .callout-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 0.88rem;
+    }
+    .callout-num {
+      width: 22px; height: 22px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .callout-num.green { background: var(--green); }
+    .callout-num.blue { background: var(--blue); }
+
+    /* ── PHONE FRAME ── */
+    .phone-wrap {
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .phone {
+      width: 260px;
+      border-radius: 36px;
+      border: 7px solid #1a1a2e;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.08);
+      overflow: hidden;
+      background: #fff;
+      position: relative;
+    }
+    .phone::before {
+      content: '';
+      display: block;
+      width: 60px; height: 6px;
+      background: #1a1a2e;
+      border-radius: 3px;
+      margin: 8px auto 0;
+    }
+
+    /* ── PHONE SCREEN COMPONENTS ── */
+    .ph-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 14px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ph-header h4 { font-size: 0.85rem; font-weight: 700; }
+    .ph-header .ph-sub { font-size: 0.65rem; opacity: 0.75; }
+    .ph-back { font-size: 0.75rem; opacity: 0.8; }
+    .ph-lang {
+      font-size: 0.65rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    .ph-body { padding: 12px; background: var(--bg); min-height: 340px; }
+
+    .ph-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    .ph-label { font-size: 0.65rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+    .ph-input {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+    .ph-input.focused { border-color: var(--primary); }
+
+    .ph-badge {
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .ph-badge.new { background: var(--green-light); }
+    .ph-badge.known { background: var(--blue-light); }
+    .ph-badge-icon { font-size: 1rem; flex-shrink: 0; }
+    .ph-badge-title { font-size: 0.72rem; font-weight: 700; }
+    .ph-badge-sub { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+    .ph-badge-hint { font-size: 0.6rem; color: var(--blue); margin-top: 4px; font-style: italic; }
+
+    .ph-btn {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 6px;
+    }
+    .ph-btn.block { display: block; width: 100%; }
+    .ph-btn.green { background: var(--green); }
+
+    .ph-type-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .ph-type-btn {
+      flex: 1;
+      text-align: center;
+      padding: 5px;
+      border-radius: 8px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 2px solid var(--border);
+      background: #fff;
+    }
+    .ph-type-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+    .ph-section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    /* Session list */
+    .ph-session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.68rem;
+    }
+    .ph-session-placa { font-weight: 700; font-family: monospace; }
+    .ph-session-badge {
+      font-size: 0.58rem;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-weight: 700;
+    }
+    .ph-session-badge.known { background: var(--blue-light); color: var(--blue); }
+    .ph-session-badge.new { background: var(--green-light); color: var(--green); }
+
+    /* Modal overlay */
+    .ph-modal-overlay {
+      position: relative;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+    .ph-modal {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .ph-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ph-modal-header span { font-size: 0.72rem; font-weight: 700; }
+    .ph-modal-header .ph-close { font-size: 0.65rem; color: var(--muted); }
+    .ph-modal-plate { padding: 4px 10px; font-size: 0.75rem; font-weight: 800; color: var(--primary); }
+    .ph-history-row {
+      display: flex;
+      gap: 6px;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.62rem;
+      flex-wrap: wrap;
+    }
+    .ph-history-date { font-weight: 700; min-width: 70px; }
+    .ph-history-time { color: var(--muted); }
+    .ph-history-note { color: var(--muted); font-style: italic; flex: 0 0 100%; padding-bottom: 2px; }
+    .ph-modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      border-top: 1px solid var(--border);
+    }
+    .ph-modal-footer .ph-copy-btn { font-size: 0.62rem; color: var(--muted); font-weight: 600; }
+    .ph-modal-footer .ph-close-btn {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.62rem;
+      font-weight: 700;
+    }
+
+    /* KPI grid */
+    .ph-kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .ph-kpi {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .ph-kpi-val { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    .ph-kpi-lbl { font-size: 0.58rem; color: var(--muted); margin-top: 2px; }
+
+    .ph-chart-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 48px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 8px 4px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .ph-bar {
+      flex: 1;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+      opacity: 0.7;
+    }
+
+    .ph-donut-wrap {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .ph-donut {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0% 35%, var(--blue) 35% 100%);
+      flex-shrink: 0;
+      box-shadow: inset 0 0 0 12px #fff;
+    }
+    .ph-donut-legend { font-size: 0.6rem; }
+    .ph-donut-legend div { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+    .ph-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Table */
+    .ph-table { width: 100%; font-size: 0.58rem; }
+    .ph-table th {
+      background: var(--bg);
+      padding: 4px 6px;
+      text-align: right;
+      color: var(--muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    .ph-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.6rem;
+    }
+    .ph-status {
+      display: inline-block;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.55rem;
+    }
+    .ph-status.known { background: var(--blue-light); color: var(--blue); }
+    .ph-status.new { background: var(--green-light); color: var(--green); }
+
+    /* Login screen */
+    .ph-login-body {
+      padding: 20px 16px;
+      background: var(--bg);
+      min-height: 340px;
+      display: flex;
+      align-items: center;
+    }
+    .ph-login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .ph-login-logo { font-size: 1.8rem; margin-bottom: 6px; }
+    .ph-login-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 12px; }
+    .ph-login-field {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.7rem;
+      margin-bottom: 6px;
+      text-align: right;
+      width: 100%;
+    }
+
+    /* Landing */
+    .ph-landing-body {
+      padding: 14px 12px;
+      background: var(--bg);
+      min-height: 340px;
+    }
+    .ph-landing-hero {
+      text-align: center;
+      padding: 10px 0 14px;
+    }
+    .ph-landing-logo { font-size: 2rem; }
+    .ph-landing-title { font-size: 0.85rem; font-weight: 800; }
+    .ph-landing-sub { font-size: 0.62rem; color: var(--muted); }
+    .ph-landing-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .ph-landing-icon { font-size: 1.4rem; }
+    .ph-landing-card h5 { font-size: 0.75rem; font-weight: 700; }
+    .ph-landing-card p { font-size: 0.6rem; color: var(--muted); }
+
+    /* User button in header */
+    .ph-user-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 0.58rem;
+      font-weight: 600;
+    }
+
+    /* ── INFO BOXES ── */
+    .tip-box {
+      background: var(--primary-light);
+      border-right: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      margin-top: 16px;
+      color: var(--text);
+    }
+    .tip-box strong { color: var(--primary); }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .footer strong { color: var(--primary); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .screen-row, .screen-row.reverse { flex-direction: column; align-items: center; }
+      .hero h1 { font-size: 1.5rem; }
+      .section { padding: 36px 16px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="toc">
+  <a href="#s0">🏠 דף הבית</a>
+  <a href="#s1">🔐 כניסה</a>
+  <a href="#s2">🟢 רכב חדש</a>
+  <a href="#s3">🔵 רכב מוכר</a>
+  <a href="#s4">📋 היסטוריה</a>
+  <a href="#s5">📝 רשימת סשן</a>
+  <a href="#s6">📊 דשבורד</a>
+  <a href="#s7">🚗 ניהול רכבים</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-logo">🅿️</div>
+  <h1>מדריך שימוש — ParkLog</h1>
+  <p>סקירה מלאה של כל מסכי המערכת, פופ-אפים וזרימת השימוש</p>
+</div>
+
+<hr class="divider">
+
+<!-- ══ SECTION 0: Landing ══ -->
+<section class="section" id="s0">
+  <div class="section-header">
+    <div class="section-num">🏠</div>
+    <div>
+      <h2>דף הבית</h2>
+      <p>נקודת הכניסה למערכת — בחירת יישום</p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-landing-body">
+          <div class="ph-landing-hero">
+            <div class="ph-landing-logo">🅿️</div>
+            <div class="ph-landing-title">ParkLog</div>
+            <div class="ph-landing-sub">מערכת ניהול כניסות רכבים</div>
+            <div style="margin-top:8px">
+              <span style="border:1.5px solid #4F46E5;border-radius:6px;padding:2px 6px;font-size:0.62rem;margin-left:4px">ES 🇪🇸</span>
+              <span style="border:1.5px solid #ccc;border-radius:6px;padding:2px 6px;font-size:0.62rem;opacity:0.5">HE 🇮🇱</span>
+            </div>
+          </div>
+          <div class="ph-landing-card">
+            <div class="ph-landing-icon">🚗</div>
+            <div>
+              <h5>ListaCarro</h5>
+              <p>בדיקת רכבים — הזנת כניסות</p>
+            </div>
+          </div>
+          <div class="ph-landing-card">
+            <div class="ph-landing-icon">📊</div>
+            <div>
+              <h5>CommandCenter</h5>
+              <p>דשבורד ניהולי — נתונים ודוחות</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>בחירת יישום</h3>
+      <p>מסך זה מאפשר לנווט בין שני חלקי המערכת. בחר שפה בכפתור הדגלים בחלק העליון.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num">1</div><span><strong>ListaCarro</strong> — לעובדים בשטח: הזנת לוחיות, בדיקת רכב חדש/מוכר</span></li>
+        <li><div class="callout-num">2</div><span><strong>CommandCenter</strong> — למנהל: דשבורד, נתונים, ייצוא, היסטוריה</span></li>
+        <li><div class="callout-num">3</div><span><strong>מתג שפה</strong> — ES ספרדית / HE עברית — נשמר בין ביקורים</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 1: Login ══ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num">🔐</div>
+    <div>
+      <h2>כניסה למערכת</h2>
+      <p>מסך התחברות — ListaCarro ו-CommandCenter</p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-login-body">
+          <div class="ph-login-card">
+            <div class="ph-login-logo">🅿️</div>
+            <div class="ph-login-title">כניסה — ListaCarro</div>
+            <input class="ph-login-field" placeholder="שם משתמש" readonly>
+            <input class="ph-login-field" placeholder="••••••••" readonly style="margin-bottom:10px">
+            <div class="ph-btn block" style="font-size:0.75rem">כניסה</div>
+            <div style="margin-top:8px;font-size:0.62rem;color:#4F46E5;text-align:center">← חזרה לדף הבית</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>כניסה לפני שימוש</h3>
+      <p>כל יישום דורש כניסה עם שם משתמש וסיסמה. השם נשמר ומשויך לרישומים.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num">1</div><span><strong>שם משתמש</strong> — יופיע בכותרת לאורך כל השימוש וישמר ברישומים</span></li>
+        <li><div class="callout-num">2</div><span><strong>סיסמה</strong> — מוגדרת מראש, שונה בין ListaCarro ל-CommandCenter</span></li>
+        <li><div class="callout-num">3</div><span><strong>התנתקות</strong> — לחיצה על שם המשתמש בכותרת מתנתקת ומחזירה למסך כניסה</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>טיפ:</strong> הדפדפן זוכר את שם המשתמש — בכניסה הבאה לא צריך להקליד מחדש.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 2: New Vehicle ══ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num">🟢</div>
+    <div>
+      <h2>הזנת רכב — רכב חדש</h2>
+      <p>ListaCarro — רכב שמעולם לא נראה במערכת</p>
+    </div>
+  </div>
+
+  <div class="screen-row reverse">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-header">
+          <div class="ph-back">←</div>
+          <div style="text-align:center">
+            <div style="font-size:0.82rem;font-weight:700">ListaCarro</div>
+            <div style="font-size:0.6rem;opacity:0.75">בדיקת רכבים</div>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <div class="ph-user-btn">👤 מוריה ✕</div>
+            <div class="ph-lang">ES</div>
+          </div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-card">
+            <div class="ph-label">מספר לוחית</div>
+            <div class="ph-input focused">ABC223</div>
+
+            <div class="ph-badge new">
+              <div class="ph-badge-icon">🟢</div>
+              <div>
+                <div class="ph-badge-title" style="color:#10B981">רכב חדש</div>
+                <div class="ph-badge-sub">רכב זה לא היה כאן בעבר</div>
+              </div>
+            </div>
+
+            <div class="ph-label">סוג רכב</div>
+            <div class="ph-type-row">
+              <div class="ph-type-btn active">🚗 מכונית</div>
+              <div class="ph-type-btn">🛵 אופנוע</div>
+            </div>
+
+            <div class="ph-label">הערות (אופציונלי)</div>
+            <div class="ph-input" style="color:#aaa;font-weight:400;font-size:0.7rem">סוטנו 2, כניסה ראשית...</div>
+
+            <div class="ph-btn block">💾 שמור כניסה</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>רכב חדש — תג ירוק</h3>
+      <p>כאשר מזינים לוחית שלא קיימת במערכת, מוצג תג ירוק מיידית. הרכב נרשם אוטומטית.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num green">1</div><span><strong>שדה לוחית</strong> — הקלד/הדבק את מספר הרכב, הבדיקה מתבצעת אוטומטית</span></li>
+        <li><div class="callout-num green">2</div><span><strong>תג ירוק</strong> — מסמן שזה ביקור ראשון של הרכב</span></li>
+        <li><div class="callout-num green">3</div><span><strong>סוג רכב</strong> — בחר מכונית או אופנוע</span></li>
+        <li><div class="callout-num green">4</div><span><strong>הערות</strong> — שדה חופשי: מיקום, תיאור, מידע נוסף (עד 300 תווים)</span></li>
+        <li><div class="callout-num green">5</div><span><strong>שמור כניסה</strong> — שולח ושומר ב-Google Sheets בשנייה</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 3: Known Vehicle ══ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num">🔵</div>
+    <div>
+      <h2>הזנת רכב — רכב מוכר</h2>
+      <p>ListaCarro — רכב שכבר קיים במערכת</p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-header">
+          <div class="ph-back">←</div>
+          <div style="text-align:center">
+            <div style="font-size:0.82rem;font-weight:700">ListaCarro</div>
+            <div style="font-size:0.6rem;opacity:0.75">בדיקת רכבים</div>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <div class="ph-user-btn">👤 מוריה ✕</div>
+            <div class="ph-lang">ES</div>
+          </div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-card">
+            <div class="ph-label">מספר לוחית</div>
+            <div class="ph-input focused">AAA111</div>
+
+            <div class="ph-badge known" style="cursor:pointer">
+              <div class="ph-badge-icon">🔵</div>
+              <div>
+                <div class="ph-badge-title" style="color:#3B82F6">רכב מוכר</div>
+                <div class="ph-badge-sub">ביקור אחרון: 09/03/2026 — 7 ביקורים בסה"כ</div>
+                <div class="ph-badge-hint">🔍 לחץ לצפייה בהיסטוריית ביקורים</div>
+              </div>
+            </div>
+
+            <div class="ph-label">סוג רכב</div>
+            <div class="ph-type-row">
+              <div class="ph-type-btn active">🚗 מכונית</div>
+              <div class="ph-type-btn">🛵 אופנוע</div>
+            </div>
+
+            <div class="ph-label">הערות (אופציונלי)</div>
+            <div class="ph-input" style="color:#aaa;font-weight:400;font-size:0.7rem">הערות אופציונליות...</div>
+
+            <div class="ph-btn block">💾 שמור כניסה</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>רכב מוכר — תג כחול</h3>
+      <p>לוחית שכבר רשומה מקבלת תג כחול עם מידע על הביקור האחרון וסך הביקורים.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num blue">1</div><span><strong>תג כחול</strong> — הרכב מוכר, כולל תאריך ביקור אחרון ומספר ביקורים כולל</span></li>
+        <li><div class="callout-num blue">2</div><span><strong>לחיצה על התג</strong> — פותח פופ-אפ עם היסטוריית כל הביקורים (ראה מסך הבא)</span></li>
+        <li><div class="callout-num blue">3</div><span><strong>שם המשתמש בכותרת</strong> — לחיצה על השם מאפשרת התנתקות</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>חשוב:</strong> ניתן לשמור כניסה גם לרכב מוכר — כל כניסה נרשמת בנפרד עם תאריך, שעה והערה.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 4: History Popup ══ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">📋</div>
+    <div>
+      <h2>היסטוריית ביקורים</h2>
+      <p>פופ-אפ עם כל הכניסות הקודמות של הרכב</p>
+    </div>
+  </div>
+
+  <div class="screen-row reverse">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-header">
+          <div class="ph-back">←</div>
+          <div style="text-align:center">
+            <div style="font-size:0.82rem;font-weight:700">ListaCarro</div>
+          </div>
+          <div class="ph-lang">ES</div>
+        </div>
+        <div class="ph-body" style="padding:8px">
+          <div class="ph-modal-overlay">
+            <div class="ph-modal">
+              <div class="ph-modal-header">
+                <span>היסטוריית ביקורים</span>
+                <span class="ph-close">✕</span>
+              </div>
+              <div class="ph-modal-plate">AAA111</div>
+              <div class="ph-history-row">
+                <span class="ph-history-date">10/03/2026</span>
+                <span class="ph-history-time">09:56</span>
+                <span class="ph-history-note">סוטנו 2 כניסה ראשית</span>
+              </div>
+              <div class="ph-history-row">
+                <span class="ph-history-date">09/03/2026</span>
+                <span class="ph-history-time">23:11</span>
+                <span class="ph-history-note">top</span>
+              </div>
+              <div class="ph-history-row">
+                <span class="ph-history-date">09/03/2026</span>
+                <span class="ph-history-time">21:16</span>
+              </div>
+              <div class="ph-history-row">
+                <span class="ph-history-date">08/03/2026</span>
+                <span class="ph-history-time">20:29</span>
+                <span class="ph-history-note">כניסה דרומית</span>
+              </div>
+              <div class="ph-modal-footer">
+                <span class="ph-copy-btn">העתק טבלה</span>
+                <span class="ph-close-btn">סגור</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>פופ-אפ היסטוריה</h3>
+      <p>לחיצה על התג הכחול של רכב מוכר פותחת את הפופ-אפ הזה עם רשימת כל הכניסות הקודמות.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num">1</div><span><strong>לוחית הרכב</strong> — מוצגת בכחול בראש הפופ-אפ</span></li>
+        <li><div class="callout-num">2</div><span><strong>תאריך + שעה</strong> — כל רשומה עם חותמת זמן מדויקת</span></li>
+        <li><div class="callout-num">3</div><span><strong>הערה</strong> — מוצגת בשורה שנייה (אם הוזנה) — טקסט מלא ללא קיצור</span></li>
+        <li><div class="callout-num">4</div><span><strong>העתק טבלה</strong> — מעתיק את כל ההיסטוריה ללוח, מוכנה להדבקה ב-WhatsApp / Excel</span></li>
+        <li><div class="callout-num">5</div><span><strong>סגירה אוטומטית</strong> — הפופ-אפ נסגר אוטומטית אחרי 10 שניות ממועד הצגת הנתונים</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 5: Session List ══ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num">📝</div>
+    <div>
+      <h2>רשימת כניסות — סשן</h2>
+      <p>ListaCarro — רכבים שנרשמו בסשן הנוכחי</p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-header">
+          <div class="ph-back">←</div>
+          <div style="text-align:center">
+            <div style="font-size:0.82rem;font-weight:700">ListaCarro</div>
+          </div>
+          <div class="ph-lang">ES</div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-card" style="padding:10px 12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div class="ph-section-title">כניסות בסשן זה</div>
+              <div style="background:var(--primary);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.65rem;font-weight:700">5</div>
+            </div>
+
+            <div class="ph-session-item">
+              <span class="ph-session-placa">AAA111</span>
+              <span>09:56</span>
+              <span class="ph-session-badge known">מוכר</span>
+            </div>
+            <div class="ph-session-item">
+              <span class="ph-session-placa">ABC223</span>
+              <span>09:41</span>
+              <span class="ph-session-badge new">חדש</span>
+            </div>
+            <div class="ph-session-item">
+              <span class="ph-session-placa">XYZ789</span>
+              <span>09:30</span>
+              <span class="ph-session-badge known">מוכר</span>
+            </div>
+            <div class="ph-session-item">
+              <span class="ph-session-placa">DEF456</span>
+              <span>09:12</span>
+              <span class="ph-session-badge new">חדש</span>
+            </div>
+            <div class="ph-session-item" style="border:none">
+              <span class="ph-session-placa">GHI321</span>
+              <span>08:55</span>
+              <span class="ph-session-badge known">מוכר</span>
+            </div>
+
+            <div class="ph-btn" style="margin-top:10px;background:#F1F5F9;color:var(--text);font-size:0.68rem;border-radius:8px;padding:6px;text-align:center">
+              📋 העתק רשימה
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>מעקב סשן בזמן אמת</h3>
+      <p>בתחתית המסך מופיעה רשימה חיה של כל הרכבים שנרשמו מאז פתיחת האפליקציה היום.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num">1</div><span><strong>מונה כניסות</strong> — מספר הרשומות בסשן הנוכחי</span></li>
+        <li><div class="callout-num">2</div><span><strong>תג מוכר/חדש</strong> — צבע מסמן אם הרכב מוכר (כחול) או חדש (ירוק)</span></li>
+        <li><div class="callout-num">3</div><span><strong>שעת כניסה</strong> — שעה מדויקת לכל רשומה</span></li>
+        <li><div class="callout-num">4</div><span><strong>העתק רשימה</strong> — מעתיק את כל הלוחיות ללוח, שורה אחת לכל רכב</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>חידוש אוטומטי:</strong> הרשימה מתאפסת כל יום בחצות ומתחילה מחדש.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 6: CommandCenter Dashboard ══ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num">📊</div>
+    <div>
+      <h2>CommandCenter — דשבורד</h2>
+      <p>תצוגת ניהול עם KPIs, גרפים וסטטיסטיקות</p>
+    </div>
+  </div>
+
+  <div class="screen-row reverse">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-header">
+          <div class="ph-back">←</div>
+          <div style="text-align:center">
+            <div style="font-size:0.82rem;font-weight:700">CommandCenter</div>
+            <div style="font-size:0.6rem;opacity:0.75">קומנדסנטר</div>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <div class="ph-user-btn">👤 מנהל ✕</div>
+            <div class="ph-lang">HE</div>
+          </div>
+        </div>
+        <div class="ph-body" style="padding:8px">
+
+          <!-- KPI Grid -->
+          <div class="ph-kpi-grid">
+            <div class="ph-kpi" style="cursor:pointer">
+              <div class="ph-kpi-val">12</div>
+              <div class="ph-kpi-lbl">כניסות היום</div>
+            </div>
+            <div class="ph-kpi" style="cursor:pointer">
+              <div class="ph-kpi-val">4</div>
+              <div class="ph-kpi-lbl">חדשים מהיום</div>
+            </div>
+            <div class="ph-kpi">
+              <div class="ph-kpi-val">87</div>
+              <div class="ph-kpi-lbl">סה"כ רכבים</div>
+            </div>
+            <div class="ph-kpi">
+              <div class="ph-kpi-val">38</div>
+              <div class="ph-kpi-lbl">כניסות השבוע</div>
+            </div>
+          </div>
+
+          <!-- Bar chart -->
+          <div style="font-size:0.6rem;color:var(--muted);margin-bottom:3px;font-weight:600">כניסות לפי שבוע</div>
+          <div class="ph-chart-bar">
+            <div class="ph-bar" style="height:30%"></div>
+            <div class="ph-bar" style="height:55%"></div>
+            <div class="ph-bar" style="height:40%"></div>
+            <div class="ph-bar" style="height:70%"></div>
+            <div class="ph-bar" style="height:45%"></div>
+            <div class="ph-bar" style="height:80%"></div>
+            <div class="ph-bar" style="height:60%"></div>
+            <div class="ph-bar" style="height:90%"></div>
+            <div class="ph-bar" style="height:50%;opacity:1"></div>
+          </div>
+
+          <!-- Donut chart -->
+          <div style="font-size:0.6rem;color:var(--muted);margin-bottom:3px;font-weight:600">חדשים מול מוכרים</div>
+          <div class="ph-donut-wrap">
+            <div class="ph-donut"></div>
+            <div class="ph-donut-legend">
+              <div><div class="ph-dot" style="background:var(--green)"></div><span>חדשים — 4</span></div>
+              <div><div class="ph-dot" style="background:var(--blue)"></div><span>מוכרים — 8</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>דשבורד ניהולי</h3>
+      <p>מסך זה מציג מבט-על על כל פעילות החניון בזמן אמת.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num">1</div><span><strong>כניסות היום</strong> — סך כל הרשומות מהיום. לחיצה מציגה רשימה עם תגי ×N לרכבים שנכנסו מספר פעמים</span></li>
+        <li><div class="callout-num">2</div><span><strong>חדשים מהיום</strong> — רכבים שנרשמו לראשונה היום. לחיצה מציגה את רשימתם</span></li>
+        <li><div class="callout-num">3</div><span><strong>גרף שבועי</strong> — עומס כניסות ב-9 השבועות האחרונים</span></li>
+        <li><div class="callout-num">4</div><span><strong>גרף עוגה</strong> — יחס חדשים מול מוכרים עם מספרים על התוויות</span></li>
+        <li><div class="callout-num">5</div><span><strong>רענון</strong> — כפתור רענון בפינה מעדכן את כל הנתונים</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══ SECTION 7: Vehicle Table ══ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">🚗</div>
+    <div>
+      <h2>CommandCenter — ניהול רכבים</h2>
+      <p>טבלת כל הרכבים, סינון, עריכה וייצוא</p>
+    </div>
+  </div>
+
+  <div class="screen-row">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="ph-header">
+          <div class="ph-back">←</div>
+          <div style="text-align:center">
+            <div style="font-size:0.82rem;font-weight:700">CommandCenter</div>
+          </div>
+          <div class="ph-lang">HE</div>
+        </div>
+        <div class="ph-body" style="padding:8px">
+
+          <!-- Search bar -->
+          <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.68rem;color:var(--muted);margin-bottom:6px">
+            🔍 חיפוש לפי לוחית...
+          </div>
+
+          <!-- Filters -->
+          <div style="display:flex;gap:4px;margin-bottom:8px">
+            <div style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:3px 6px;font-size:0.58rem;color:var(--muted)">סוג רכב ▾</div>
+            <div style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:3px 6px;font-size:0.58rem;color:var(--muted)">סטטוס ▾</div>
+            <div style="background:#EEF2FF;border:1.5px solid var(--primary);border-radius:6px;padding:3px 6px;font-size:0.58rem;color:var(--primary);font-weight:700">ייצוא ▾</div>
+          </div>
+
+          <!-- Table -->
+          <div style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+            <table class="ph-table">
+              <thead>
+                <tr>
+                  <th>לוחית</th>
+                  <th>סוג</th>
+                  <th>ביקורים</th>
+                  <th>סטטוס</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-family:monospace;font-weight:700">AAA111</td>
+                  <td>🚗</td>
+                  <td>7</td>
+                  <td><span class="ph-status known">מוכר</span></td>
+                </tr>
+                <tr>
+                  <td style="font-family:monospace;font-weight:700">ABC223</td>
+                  <td>🚗</td>
+                  <td>1</td>
+                  <td><span class="ph-status new">חדש</span></td>
+                </tr>
+                <tr>
+                  <td style="font-family:monospace;font-weight:700">XYZ789</td>
+                  <td>🛵</td>
+                  <td>4</td>
+                  <td><span class="ph-status known">מוכר</span></td>
+                </tr>
+                <tr>
+                  <td style="font-family:monospace;font-weight:700">DEF456</td>
+                  <td>🚗</td>
+                  <td>1</td>
+                  <td><span class="ph-status new">חדש</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-info">
+      <h3>טבלת רכבים מלאה</h3>
+      <p>כל הרכבים הרשומים עם אפשרויות סינון, עריכה וייצוא.</p>
+      <ul class="callout-list">
+        <li><div class="callout-num">1</div><span><strong>חיפוש חי</strong> — הקלד לוחית וסינון מיידי בטבלה</span></li>
+        <li><div class="callout-num">2</div><span><strong>פילטרים</strong> — סנן לפי סוג רכב, סטטוס (חדש/מוכר), ותאריך כניסה</span></li>
+        <li><div class="callout-num">3</div><span><strong>ייצוא</strong> — ייצוא CSV או העתקה ללוח. אפשרויות: לפי תאריך / לפי ביקור אחרון</span></li>
+        <li><div class="callout-num">4</div><span><strong>עריכת הערות</strong> — לחיצה על רשומה מאפשרת עריכת הערות על הרכב</span></li>
+        <li><div class="callout-num">5</div><span><strong>היסטוריה</strong> — לחיצה על היסטוריה בשורה מציגה את כל הכניסות של הרכב הספציפי</span></li>
+        <li><div class="callout-num">6</div><span><strong>עמודות נסתרות</strong> — ניתן להציג/הסתיר עמודות לפי הצורך</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>ייצוא מהיר:</strong> לחץ על "ייצוא" ← "CSV" לקבלת קובץ Excel-מוכן עם כל הנתונים המסוננים.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FOOTER -->
+<div class="footer">
+  <div style="font-size:1.5rem;margin-bottom:8px">🅿️</div>
+  <div><strong>ParkLog</strong> — מערכת ניהול כניסות רכבים</div>
+  <div style="margin-top:6px">
+    <a href="vault-entry.html" style="color:var(--primary);margin-left:16px">ListaCarro →</a>
+    <a href="commandcenter.html" style="color:var(--primary)">CommandCenter →</a>
+  </div>
+</div>
+
+</body>
+</html>
