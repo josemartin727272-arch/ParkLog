@@ -6,7 +6,7 @@
  *
  * If the stored version does not match CURRENT_VERSION, all localStorage
  * and sessionStorage is wiped and the user is redirected to the login
- * page (index.html) so they must re-authenticate.
+ * page (index2.html) so they must re-authenticate.
  *
  * When bumping the app version, update CURRENT_VERSION here AND
  * CONFIG.PARKLOG_VERSION in config.js to the same value.
@@ -22,8 +22,8 @@
 
     /* Redirect to index unless already there */
     var path = window.location.pathname;
-    if (!path.endsWith('index.html') && path !== '/' && path !== '') {
-      window.location.replace('index.html');
+    if (!path.endsWith('index2.html') && path !== '/' && path !== '') {
+      window.location.replace('index2.html');
     }
   }
 })();
