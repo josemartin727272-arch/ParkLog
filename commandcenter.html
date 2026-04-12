@@ -6,6 +6,7 @@
   <title>CommandCenter — ParkLog</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="commandcenter.css">
+  <script src="version-check.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
@@ -81,8 +82,8 @@
         </button>
       </div>
 
-      <!-- KPI Grid -->
-      <section class="kpi-grid" id="kpi-grid" aria-label="Key metrics">
+      <!-- KPI Grid (5 cards) -->
+      <section class="kpi-grid kpi-grid-5" id="kpi-grid" aria-label="Key metrics">
         <button class="kpi-card kpi-card-clickable" id="kpi-card-entries" aria-label="Show today's entries list">
           <div class="kpi-icon">📊</div>
           <div class="kpi-value" id="kpi-entries-today">
@@ -103,6 +104,13 @@
             <div class="skeleton skeleton-text" style="width:60%;margin:auto"></div>
           </div>
           <div class="kpi-label" data-i18n="kpi.totalVehicles">Total vehículos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🚶</div>
+          <div class="kpi-value" id="kpi-total-persons">
+            <div class="skeleton skeleton-text" style="width:60%;margin:auto"></div>
+          </div>
+          <div class="kpi-label" data-i18n="kpi.totalPersons">Total personas</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon">📅</div>
@@ -131,6 +139,7 @@
               <option value="" data-i18n="filter.type.all">Todos</option>
               <option value="auto" data-i18n="filter.type.auto">Automóvil</option>
               <option value="moto" data-i18n="filter.type.moto">Motocicleta</option>
+              <option value="persona" data-i18n="filter.type.persona">Personas</option>
             </select>
           </div>
           <!-- Status -->
@@ -238,6 +247,48 @@
         </div>
       </section>
 
+      <!-- Settings Section (admin only — revealed by JS) -->
+      <section id="settings-section" class="hidden" aria-label="Settings">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i data-lucide="settings" style="width:18px;height:18px;margin-inline-end:var(--space-xs)"></i>
+              <span data-i18n="settings.title">Configuración</span>
+            </h3>
+          </div>
+          <div class="settings-users">
+            <div class="settings-users-header">
+              <h4 data-i18n="settings.users.title">Usuarios del sistema</h4>
+              <button id="add-user-btn" class="btn btn-sm btn-primary">
+                <i data-lucide="user-plus" style="width:16px;height:16px"></i>
+                <span data-i18n="settings.addUser">Agregar usuario</span>
+              </button>
+            </div>
+            <!-- Add User Inline Form -->
+            <div id="add-user-form" class="settings-add-user hidden">
+              <input type="text" id="new-user-name" class="form-input"
+                     maxlength="50"
+                     data-i18n="settings.displayName"
+                     data-i18n-attr="placeholder">
+              <select id="new-user-role" class="form-select">
+                <option value="employee" data-i18n="settings.role.employee">Empleado</option>
+                <option value="admin" data-i18n="settings.role.admin">Admin</option>
+              </select>
+              <button id="add-user-submit" class="btn btn-sm btn-primary">
+                <span data-i18n="settings.addUser">Agregar</span>
+              </button>
+              <button id="add-user-cancel" class="btn btn-sm btn-ghost">
+                <span data-i18n="notes.cancel">Cancelar</span>
+              </button>
+            </div>
+            <!-- Users Table -->
+            <div id="users-table-wrapper" class="settings-users-table">
+              <div class="skeleton" style="height:80px;border-radius:var(--radius-md)"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -298,9 +349,7 @@
       </div>
       <div class="modal-body">
         <div id="kpi-list-content" class="kpi-list-content"></div>
-        <div id="kpi-list-empty" class="kpi-list-empty hidden">
-          <span>—</span>
-        </div>
+        <div id="kpi-list-empty" class="kpi-list-empty hidden"><span>—</span></div>
       </div>
       <div class="modal-footer">
         <button id="kpi-list-copy" class="btn btn-sm btn-primary">
@@ -312,8 +361,34 @@
     </div>
   </div>
 
+  <!-- New Password Modal (admin — shown after createUser / resetPassword) -->
+  <div id="new-password-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="new-password-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="new-password-title" data-i18n="settings.newPasswordTitle">Contraseña generada</h3>
+        <button id="new-password-close" class="btn btn-ghost" aria-label="Close">
+          <i data-lucide="x" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm text-muted" style="margin-block-end:var(--space-md)" data-i18n="settings.newPasswordNote">
+          Guarda esta contraseña — no se mostrará de nuevo
+        </p>
+        <div id="new-password-value" class="new-password-display"></div>
+        <button id="new-password-copy" class="btn btn-sm btn-secondary" style="margin-block-start:var(--space-sm)">
+          <i data-lucide="clipboard" style="width:16px;height:16px"></i>
+          <span data-i18n="export.copy">Copiar</span>
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button id="new-password-done" class="btn btn-sm btn-primary" data-i18n="history.close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="config.js"></script>
   <script src="i18n.js"></script>
+  <script src="auth.js"></script>
   <script src="sheets.js"></script>
   <script src="commandcenter.js"></script>
 </body>

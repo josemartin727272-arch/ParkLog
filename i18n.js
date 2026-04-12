@@ -158,7 +158,54 @@ const TRANSLATIONS = {
     'loading': 'Cargando...',
     'empty.noEntries': 'No hay entradas aún',
     'empty.noVehicles': 'No hay vehículos registrados',
-    'lastUpdated': 'Última actualización'
+    'lastUpdated': 'Última actualización',
+
+    /* ── Persona Entry Type ── */
+    'entry.tipo.persona': 'Persona',
+    'entry.person.firstName.label': 'Nombre',
+    'entry.person.lastName.label': 'Apellido',
+    'entry.person.idNumber.label': 'Cédula',
+    'entry.person.firstName.placeholder': 'Nombre',
+    'entry.person.lastName.placeholder': 'Apellido',
+    'entry.person.idNumber.placeholder': '5–12 dígitos',
+    'msg.error.idEmpty': 'Ingrese el número de cédula',
+    'msg.error.idFormat': 'Cédula inválida: solo dígitos, 5–12 caracteres',
+    'badge.new.person': '¡Persona nueva!',
+    'badge.new.person.subtitle': 'Primera vez en el sistema',
+    'badge.known.person': 'Persona conocida',
+    'msg.saved.new.person': '¡Guardado! Nueva persona registrada',
+    'msg.saved.known.person': '¡Guardado! Entrada #{count} para esta persona',
+
+    /* ── Auth ── */
+    'login.error.user': 'Usuario no encontrado o inactivo',
+    'login.error.password': 'Contraseña incorrecta',
+    'login.loading': 'Verificando...',
+
+    /* ── KPIs (new) ── */
+    'kpi.totalPersons': 'Total personas',
+
+    /* ── Filters (new) ── */
+    'filter.type.persona': 'Personas',
+
+    /* ── Settings (admin only) ── */
+    'settings.title': 'Configuración',
+    'settings.users.title': 'Usuarios del sistema',
+    'settings.addUser': 'Agregar usuario',
+    'settings.displayName': 'Nombre de usuario',
+    'settings.role': 'Rol',
+    'settings.role.admin': 'Admin',
+    'settings.role.employee': 'Empleado',
+    'settings.status': 'Estado',
+    'settings.user.active': 'Activo',
+    'settings.user.inactive': 'Inactivo',
+    'settings.toggleActive': 'Activar / Desactivar',
+    'settings.resetPassword': 'Restablecer',
+    'settings.created': 'Creado',
+    'settings.newPasswordTitle': 'Contraseña generada',
+    'settings.newPasswordNote': 'Guarda esta contraseña — no se mostrará de nuevo',
+    'settings.actions': 'Acciones',
+    'settings.cantDeactivateSelf': 'No puedes desactivarte a ti mismo',
+    'settings.addUser.success': 'Usuario creado'
   },
 
   he: {
@@ -308,7 +355,54 @@ const TRANSLATIONS = {
     'loading': 'טוען...',
     'empty.noEntries': 'אין כניסות עדיין',
     'empty.noVehicles': 'אין רכבים רשומים',
-    'lastUpdated': 'עדכון אחרון'
+    'lastUpdated': 'עדכון אחרון',
+
+    /* ── Persona Entry Type ── */
+    'entry.tipo.persona': 'הולך רגל',
+    'entry.person.firstName.label': 'שם פרטי',
+    'entry.person.lastName.label': 'שם משפחה',
+    'entry.person.idNumber.label': 'ת.ז.',
+    'entry.person.firstName.placeholder': 'שם פרטי',
+    'entry.person.lastName.placeholder': 'שם משפחה',
+    'entry.person.idNumber.placeholder': '5–12 ספרות',
+    'msg.error.idEmpty': 'הזן מספר תעודת זהות',
+    'msg.error.idFormat': 'ת.ז. לא תקין: רק ספרות, 5–12 תווים',
+    'badge.new.person': 'אדם חדש!',
+    'badge.new.person.subtitle': 'פעם ראשונה במערכת',
+    'badge.known.person': 'אדם מוכר',
+    'msg.saved.new.person': 'נשמר! אדם חדש נרשם',
+    'msg.saved.known.person': 'נשמר! כניסה #{count} לאדם זה',
+
+    /* ── Auth ── */
+    'login.error.user': 'משתמש לא נמצא או לא פעיל',
+    'login.error.password': 'סיסמה שגויה',
+    'login.loading': 'מאמת...',
+
+    /* ── KPIs (new) ── */
+    'kpi.totalPersons': 'סה"כ אנשים',
+
+    /* ── Filters (new) ── */
+    'filter.type.persona': 'הולכי רגל',
+
+    /* ── Settings (admin only) ── */
+    'settings.title': 'הגדרות',
+    'settings.users.title': 'משתמשי המערכת',
+    'settings.addUser': 'הוסף משתמש',
+    'settings.displayName': 'שם משתמש',
+    'settings.role': 'תפקיד',
+    'settings.role.admin': 'מנהל',
+    'settings.role.employee': 'עובד',
+    'settings.status': 'סטטוס',
+    'settings.user.active': 'פעיל',
+    'settings.user.inactive': 'לא פעיל',
+    'settings.toggleActive': 'שנה סטטוס',
+    'settings.resetPassword': 'איפוס',
+    'settings.created': 'נוצר',
+    'settings.newPasswordTitle': 'סיסמה שנוצרה',
+    'settings.newPasswordNote': 'שמור סיסמה זו — לא תוצג שוב',
+    'settings.actions': 'פעולות',
+    'settings.cantDeactivateSelf': 'לא ניתן לנטרל את עצמך',
+    'settings.addUser.success': 'משתמש נוצר'
   }
 };
 

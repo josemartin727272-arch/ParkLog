@@ -1,20 +1,81 @@
 /**
  * ParkLog — VaultEntry Logic
- * Form handling, plate lookup, submission, session tracking.
+ * Form handling, plate/person lookup, submission, session tracking.
+ * v2.0: auth.js-based login, persona entry type, version-gated storage clear.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  /* ── Login ── */
-  const loginOverlay = document.getElementById('login-overlay');
-  const loginBtn = document.getElementById('login-btn');
-  const loginUsernameInput = document.getElementById('login-username');
-  const loginPasswordInput = document.getElementById('login-password');
-  const loginError = document.getElementById('login-error');
 
-  const STORAGE_USER_KEY = 'parklog-ve-username';
-  let currentUser = localStorage.getItem(STORAGE_USER_KEY) || '';
+  /* ── Change 3: Version-gated storage invalidation ── */
+  const storedVersion = localStorage.getItem('parklog-version');
+  if (storedVersion !== CONFIG.PARKLOG_VERSION) {
+    localStorage.clear();
+    sessionStorage.clear();
+    localStorage.setItem('parklog-version', CONFIG.PARKLOG_VERSION);
+  }
+
+  /* ── DOM References ── */
+  const loginOverlay  = document.getElementById('login-overlay');
+  const loginBtn      = document.getElementById('login-btn');
+  const loginUsername = document.getElementById('login-username');
+  const loginPassword = document.getElementById('login-password');
+  const loginError    = document.getElementById('login-error');
 
   const headerUserBtn = document.getElementById('header-user-btn');
+
+  /* Vehicle fields */
+  const vehicleFields = document.getElementById('vehicle-fields');
+  const placaInput    = document.getElementById('placa-input');
+  const placaError    = document.getElementById('placa-error');
+  const placaSpinner  = document.getElementById('placa-spinner');
+
+  /* Person fields */
+  const personFields    = document.getElementById('person-fields');
+  const firstNameInput  = document.getElementById('first-name-input');
+  const lastNameInput   = document.getElementById('last-name-input');
+  const idNumberInput   = document.getElementById('id-number-input');
+  const idSpinner       = document.getElementById('id-spinner');
+  const idError         = document.getElementById('id-error');
+
+  /* Shared */
+  const vehicleStatus = document.getElementById('vehicle-status');
+  const notesInput    = document.getElementById('notes-input');
+  const charCount     = document.getElementById('char-count');
+  const submitBtn     = document.getElementById('submit-btn');
+  const confirmation  = document.getElementById('confirmation');
+  const sessionItems  = document.getElementById('session-items');
+  const sessionCount  = document.getElementById('session-count');
+  const copySessionBtn = document.getElementById('copy-session-btn');
+  const offlineBar    = document.getElementById('offline-bar');
+
+  /* ── State ── */
+  let currentUser     = '';
+  let selectedTipo    = CONFIG.DEFAULT_VEHICLE_TYPE; // 'auto' | 'moto' | 'persona'
+  let currentVehicle  = null; // { isNew, vehicle } from vehicle lookup
+  let currentPerson   = null; // { found, person_id, firstName, ... } from person lookup
+  let lookupTimer     = null;
+  let lookupGeneration = 0;
+  let submitCooldown  = false;
+
+  /* ── Session Storage ── */
+  const SESSION_STORE_KEY = 'parklog-session-v3'; // v3 for v2.0 release
+
+  /* ── History Modal ── */
+  const veHistoryModal = document.getElementById('ve-history-modal');
+  const veHistoryClose = document.getElementById('ve-history-close');
+  const veHistoryDone  = document.getElementById('ve-history-done');
+  const veHistoryCopy  = document.getElementById('ve-history-copy');
+  const veHistoryPlate = document.getElementById('ve-history-plate');
+  const veHistoryBody  = document.getElementById('ve-history-body');
+
+  veHistoryClose.addEventListener('click', closeHistoryModal);
+  veHistoryDone.addEventListener('click', closeHistoryModal);
+  veHistoryModal.addEventListener('click', e => { if (e.target === veHistoryModal) closeHistoryModal(); });
+  veHistoryCopy.addEventListener('click', copyHistoryTable);
+
+  /* ══════════════════════════════════════════
+     Auth — Login / Session
+     ══════════════════════════════════════════ */
 
   function showHeaderUser() {
     if (currentUser && headerUserBtn) {
@@ -24,82 +85,71 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleSignOut() {
-    localStorage.removeItem(STORAGE_USER_KEY);
+    Auth.clearSession();
     location.reload();
   }
 
   if (headerUserBtn) headerUserBtn.addEventListener('click', handleSignOut);
 
-  if (currentUser) {
+  /* Check for existing valid session */
+  const existingSession = Auth.requireAuth();
+  if (existingSession) {
+    currentUser = existingSession.display_name;
     loginOverlay.classList.add('hidden');
     showHeaderUser();
-  } else {
-    // Pre-fill username if previously used
-    const savedUser = localStorage.getItem(STORAGE_USER_KEY + '-last');
-    if (savedUser) loginUsernameInput.value = savedUser;
   }
 
   loginBtn.addEventListener('click', handleLogin);
-  loginPasswordInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
 
-  function handleLogin() {
-    const username = loginUsernameInput.value.trim();
-    const password = loginPasswordInput.value;
-    if (!username) {
-      loginError.textContent = 'Ingresa tu nombre de usuario';
+  /**
+   * Authenticates via Apps Script then stores session in Auth.
+   * @returns {Promise<void>}
+   */
+  async function handleLogin() {
+    const displayName = loginUsername.value.trim();
+    const password    = loginPassword.value;
+
+    if (!displayName) {
+      loginError.textContent = t('login.error.user');
       loginError.classList.remove('hidden');
       return;
     }
-    if (password !== CONFIG.VAULT_PASSWORD) {
-      loginError.textContent = 'Contraseña incorrecta';
+
+    loginBtn.disabled = true;
+    const btnSpan = loginBtn.querySelector('span');
+    if (btnSpan) btnSpan.textContent = t('login.loading');
+    loginError.classList.add('hidden');
+
+    try {
+      const result = await DataStore.login(displayName, password);
+
+      if (!result.success) {
+        const msg = result.error === 'wrong_password'
+          ? t('login.error.password')
+          : t('login.error.user');
+        loginError.textContent = msg;
+        loginError.classList.remove('hidden');
+        loginPassword.value = '';
+        return;
+      }
+
+      const session = Auth.setSession(result);
+      currentUser = session.display_name;
+      loginOverlay.classList.add('hidden');
+      showHeaderUser();
+      applyTranslations();
+      lucide.createIcons();
+      loadSessionList();
+
+    } catch {
+      loginError.textContent = t('msg.error.server');
       loginError.classList.remove('hidden');
-      loginPasswordInput.value = '';
-      return;
+    } finally {
+      loginBtn.disabled = false;
+      if (btnSpan) btnSpan.textContent = t('login.submit');
     }
-    currentUser = username;
-    localStorage.setItem(STORAGE_USER_KEY, username);
-    localStorage.setItem(STORAGE_USER_KEY + '-last', username);
-    loginOverlay.classList.add('hidden');
-    showHeaderUser();
   }
-
-  /* ── DOM References ── */
-  const placaInput = document.getElementById('placa-input');
-  const placaError = document.getElementById('placa-error');
-  const placaSpinner = document.getElementById('placa-spinner');
-  const vehicleStatus = document.getElementById('vehicle-status');
-  const notesInput = document.getElementById('notes-input');
-  const charCount = document.getElementById('char-count');
-  const submitBtn = document.getElementById('submit-btn');
-  const confirmation = document.getElementById('confirmation');
-  const sessionItems = document.getElementById('session-items');
-  const sessionCount = document.getElementById('session-count');
-  const copySessionBtn = document.getElementById('copy-session-btn');
-  const langToggle = document.getElementById('lang-toggle');
-  const offlineBar = document.getElementById('offline-bar');
-
-  /* ── State ── */
-  let currentVehicle = null; // { isNew, vehicle } from lookup
-  let selectedTipo = CONFIG.DEFAULT_VEHICLE_TYPE;
-  let lookupTimer = null;
-  let lookupGeneration = 0; // incremented each lookup — stale results are discarded
-  let submitCooldown = false;
-
-  /* ── Session Storage Key (v2: all vehicles, localStorage, daily) ── */
-  const SESSION_STORE_KEY = 'parklog-session-v2';
-
-  /* ── History Modal ── */
-  const veHistoryModal = document.getElementById('ve-history-modal');
-  const veHistoryClose = document.getElementById('ve-history-close');
-  const veHistoryDone = document.getElementById('ve-history-done');
-  const veHistoryCopy = document.getElementById('ve-history-copy');
-  const veHistoryPlate = document.getElementById('ve-history-plate');
-  const veHistoryBody = document.getElementById('ve-history-body');
-
-  veHistoryClose.addEventListener('click', closeHistoryModal);
-  veHistoryDone.addEventListener('click', closeHistoryModal);
-  veHistoryModal.addEventListener('click', e => { if (e.target === veHistoryModal) closeHistoryModal(); });
-  veHistoryCopy.addEventListener('click', copyHistoryTable);
 
   /* ══════════════════════════════════════════
      Initialization
@@ -120,45 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ══════════════════════════════════════════
-     Event Listeners
+     Tipo Toggle
      ══════════════════════════════════════════ */
 
-  /* ── Placa Input: auto-uppercase + debounced lookup ── */
-  placaInput.addEventListener('input', (e) => {
-    /* Auto-uppercase */
-    const pos = e.target.selectionStart;
-    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-    e.target.setSelectionRange(pos, pos);
-
-    /* Clear previous state */
-    hideError();
-    hideStatus();
-    currentVehicle = null;
-    updateSubmitState();
-
-    /* Debounced lookup */
-    clearTimeout(lookupTimer);
-    const placa = e.target.value.trim();
-
-    if (placa.length >= CONFIG.PLACA_MIN_LENGTH) {
-      lookupTimer = setTimeout(() => lookupVehicle(placa), CONFIG.LOOKUP_DEBOUNCE_MS);
-    }
-  });
-
-  /* ── Placa: validate on blur ── */
-  placaInput.addEventListener('blur', () => {
-    const placa = placaInput.value.trim();
-    if (placa.length > 0 && placa.length < CONFIG.PLACA_MIN_LENGTH) {
-      showError(t('msg.error.format'));
-    }
-  });
-
-  /* ── Notes: character counter ── */
-  notesInput.addEventListener('input', () => {
-    charCount.textContent = notesInput.value.length;
-  });
-
-  /* ── Tipo Toggle ── */
   document.querySelectorAll('.toggle-option').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.toggle-option').forEach(b => {
@@ -168,7 +182,107 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
       btn.setAttribute('aria-checked', 'true');
       selectedTipo = btn.dataset.tipo;
+      handleTipoChange();
     });
+  });
+
+  /**
+   * Shows/hides vehicle vs person fields based on selectedTipo.
+   * Resets all lookup state when switching modes.
+   */
+  function handleTipoChange() {
+    const isPersona = selectedTipo === 'persona';
+
+    vehicleFields.classList.toggle('hidden', isPersona);
+    personFields.classList.toggle('hidden', !isPersona);
+
+    /* Reset state for the hidden mode */
+    hideStatus();
+    currentVehicle = null;
+    currentPerson  = null;
+    clearTimeout(lookupTimer);
+
+    if (isPersona) {
+      hideError();
+      hideIdError();
+      firstNameInput.focus();
+    } else {
+      hideIdError();
+      placaInput.value = '';
+      hideError();
+      placaInput.focus();
+    }
+
+    updateSubmitState();
+  }
+
+  /* ══════════════════════════════════════════
+     Placa Input Events (vehicle mode)
+     ══════════════════════════════════════════ */
+
+  placaInput.addEventListener('input', e => {
+    /* Auto-uppercase + filter invalid chars */
+    const pos = e.target.selectionStart;
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+    e.target.setSelectionRange(pos, pos);
+
+    hideError();
+    hideStatus();
+    currentVehicle = null;
+    updateSubmitState();
+
+    clearTimeout(lookupTimer);
+    const placa = e.target.value.trim();
+    if (placa.length >= CONFIG.PLACA_MIN_LENGTH) {
+      lookupTimer = setTimeout(() => lookupVehicle(placa), CONFIG.LOOKUP_DEBOUNCE_MS);
+    }
+  });
+
+  placaInput.addEventListener('blur', () => {
+    const placa = placaInput.value.trim();
+    if (placa.length > 0 && placa.length < CONFIG.PLACA_MIN_LENGTH) {
+      showError(t('msg.error.format'));
+    }
+  });
+
+  placaInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !submitBtn.disabled) handleSubmit();
+  });
+
+  /* ══════════════════════════════════════════
+     ID Number Input Events (persona mode)
+     ══════════════════════════════════════════ */
+
+  idNumberInput.addEventListener('input', e => {
+    /* Digits only */
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+
+    hideIdError();
+    hideStatus();
+    currentPerson = null;
+    updateSubmitState();
+
+    clearTimeout(lookupTimer);
+    const id = e.target.value.trim();
+    if (id.length >= CONFIG.ID_NUMBER_MIN_LENGTH) {
+      lookupTimer = setTimeout(() => lookupPerson(id), CONFIG.LOOKUP_DEBOUNCE_MS);
+    }
+  });
+
+  idNumberInput.addEventListener('blur', () => {
+    const id = idNumberInput.value.trim();
+    if (id.length > 0 && (id.length < CONFIG.ID_NUMBER_MIN_LENGTH || !CONFIG.ID_NUMBER_PATTERN.test(id))) {
+      showIdError(t('msg.error.idFormat'));
+    }
+  });
+
+  idNumberInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !submitBtn.disabled) handleSubmit();
+  });
+
+  /* ── Notes character counter ── */
+  notesInput.addEventListener('input', () => {
+    charCount.textContent = notesInput.value.length;
   });
 
   /* ── Submit ── */
@@ -186,52 +300,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ── Copy Session Plates ── */
+  /* ── Copy Session Entries ── */
   copySessionBtn.addEventListener('click', copySessionPlates);
-
-  /* ── Keyboard: Enter to submit ── */
-  placaInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !submitBtn.disabled) {
-      handleSubmit();
-    }
-  });
 
   /* ══════════════════════════════════════════
      Vehicle Lookup
      ══════════════════════════════════════════ */
 
   /**
-   * Looks up a plate in the backend.
-   * Shows green badge (new) or blue badge (known).
+   * Looks up a plate in the backend and shows new/known badge.
    *
    * @param {string} placa - Normalized plate
    * @returns {Promise<void>}
    */
   async function lookupVehicle(placa) {
-    const gen = ++lookupGeneration; // capture this lookup's generation
+    const gen = ++lookupGeneration;
 
     if (!CONFIG.APPS_SCRIPT_URL) {
-      /* Dev mode: simulate lookup */
       currentVehicle = { isNew: true, vehicle: null };
-      showStatusBadge(true, null);
+      showStatusBadge(true, null, 'vehicle');
       updateSubmitState();
       return;
     }
 
-    showSpinner(true);
+    showSpinner('vehicle', true);
 
     try {
       const result = await DataStore.searchVehicle(placa);
-      if (gen !== lookupGeneration) return; // a newer lookup is in flight — discard
-      currentVehicle = result;
-      showStatusBadge(result.isNew, result.vehicle);
-    } catch (err) {
       if (gen !== lookupGeneration) return;
-      /* Network failure: allow save without badge */
+      currentVehicle = result;
+      showStatusBadge(result.isNew, result.vehicle, 'vehicle');
+    } catch {
+      if (gen !== lookupGeneration) return;
       currentVehicle = { isNew: null, vehicle: null };
     } finally {
       if (gen === lookupGeneration) {
-        showSpinner(false);
+        showSpinner('vehicle', false);
+        updateSubmitState();
+      }
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     Person Lookup
+     ══════════════════════════════════════════ */
+
+  /**
+   * Looks up a person by ID number in the backend.
+   *
+   * @param {string} idNumber
+   * @returns {Promise<void>}
+   */
+  async function lookupPerson(idNumber) {
+    const gen = ++lookupGeneration;
+
+    if (!CONFIG.APPS_SCRIPT_URL) {
+      currentPerson = { found: false };
+      showStatusBadge(true, null, 'persona');
+      updateSubmitState();
+      return;
+    }
+
+    showSpinner('persona', true);
+
+    try {
+      const result = await DataStore.lookupPerson(idNumber);
+      if (gen !== lookupGeneration) return;
+      currentPerson = result;
+      showStatusBadge(!result.found, result.found ? result : null, 'persona');
+    } catch {
+      if (gen !== lookupGeneration) return;
+      currentPerson = { found: null };
+    } finally {
+      if (gen === lookupGeneration) {
+        showSpinner('persona', false);
         updateSubmitState();
       }
     }
@@ -242,40 +384,40 @@ document.addEventListener('DOMContentLoaded', () => {
      ══════════════════════════════════════════ */
 
   /**
-   * Handles form submission.
-   * Validates, saves, shows confirmation, updates session list.
-   *
+   * Handles form submission for both vehicle and persona entry types.
    * @returns {Promise<void>}
    */
   async function handleSubmit() {
     if (submitCooldown || submitBtn.disabled) return;
 
+    const session = Auth.getSession();
+    const createdBy = session ? session.display_name : (currentUser || 'anonymous');
+
+    if (selectedTipo === 'persona') {
+      await handlePersonSubmit(createdBy);
+    } else {
+      await handleVehicleSubmit(createdBy);
+    }
+  }
+
+  /**
+   * Submits a vehicle entry.
+   * @param {string} createdBy
+   * @returns {Promise<void>}
+   */
+  async function handleVehicleSubmit(createdBy) {
     const placa = placaInput.value.trim();
 
-    /* Validate */
-    if (!placa) {
-      showError(t('msg.error.empty'));
-      placaInput.focus();
-      return;
-    }
-
+    if (!placa) { showError(t('msg.error.empty')); placaInput.focus(); return; }
     if (!CONFIG.PLACA_PATTERN.test(placa) || placa.length > CONFIG.PLACA_MAX_LENGTH) {
-      showError(t('msg.error.format'));
-      placaInput.focus();
-      return;
+      showError(t('msg.error.format')); placaInput.focus(); return;
     }
 
-    /* Set cooldown */
-    submitCooldown = true;
-    submitBtn.disabled = true;
-    submitBtn.classList.add('loading');
-    submitBtn.querySelector('span').textContent = t('entry.submitting');
+    startSubmit();
 
     try {
       let result;
-
       if (!CONFIG.APPS_SCRIPT_URL) {
-        /* Dev mode: simulate save */
         result = {
           success: true,
           isNew: currentVehicle?.isNew ?? true,
@@ -284,40 +426,107 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       } else {
         result = await DataStore.saveEntry({
-          placa,
-          tipo: selectedTipo,
+          placa, tipo: selectedTipo,
           notes: notesInput.value.trim(),
-          createdBy: currentUser || 'anonymous',
-          entryDate: _todayStr()  // client-side local date — eliminates Apps Script timezone dependency
+          createdBy, entryDate: _todayStr()
         });
       }
 
-      /* Show confirmation */
       if (result.queued) {
         showToast(t('msg.queued'), 'warning');
+        addToSession(placa, true, 'vehicle');
       } else if (result.isNew) {
         showConfirmation(t('msg.saved.new'), 'success-new', placa);
-        addToSession(placa, true);
+        addToSession(placa, true, 'vehicle');
       } else {
-        const msg = t('msg.saved.known', { count: result.vehicle?.totalVisits || '?' });
-        showConfirmation(msg, 'success-known', placa);
-        addToSession(placa, false);
+        showConfirmation(t('msg.saved.known', { count: result.vehicle?.totalVisits || '?' }), 'success-known', placa);
+        addToSession(placa, false, 'vehicle');
       }
 
-      /* Reset form */
       resetForm();
-
-    } catch (err) {
+    } catch {
       showToast(navigator.onLine ? t('msg.error.server') : t('msg.error.network'), 'error');
-      /* Release cooldown immediately on error so user can retry */
-      submitCooldown = false;
-      submitBtn.classList.remove('loading');
-      submitBtn.querySelector('span').textContent = t('entry.submit');
-      updateSubmitState();
-      lucide.createIcons();
+      endSubmitError();
       return;
     }
-    /* Cooldown timer only after successful save */
+
+    scheduleSubmitCooldown();
+  }
+
+  /**
+   * Submits a persona entry.
+   * @param {string} createdBy
+   * @returns {Promise<void>}
+   */
+  async function handlePersonSubmit(createdBy) {
+    const firstName = firstNameInput.value.trim();
+    const lastName  = lastNameInput.value.trim();
+    const idNumber  = idNumberInput.value.trim();
+
+    if (!idNumber) { showIdError(t('msg.error.idEmpty')); idNumberInput.focus(); return; }
+    if (!CONFIG.ID_NUMBER_PATTERN.test(idNumber) ||
+        idNumber.length < CONFIG.ID_NUMBER_MIN_LENGTH ||
+        idNumber.length > CONFIG.ID_NUMBER_MAX_LENGTH) {
+      showIdError(t('msg.error.idFormat')); idNumberInput.focus(); return;
+    }
+    if (!firstName) { firstNameInput.focus(); return; }
+    if (!lastName)  { lastNameInput.focus();  return; }
+
+    startSubmit();
+
+    try {
+      let result;
+      if (!CONFIG.APPS_SCRIPT_URL) {
+        result = {
+          success: true, isNew: true,
+          person: { firstName, lastName, idNumber, totalVisits: 1 }
+        };
+      } else {
+        result = await DataStore.savePersonEntry({
+          firstName, lastName, idNumber,
+          notes: notesInput.value.trim(),
+          createdBy, entryDate: _todayStr()
+        });
+      }
+
+      const displayName = `${firstName} ${lastName}`;
+      if (result.queued) {
+        showToast(t('msg.queued'), 'warning');
+        addToSession(displayName, true, 'persona');
+      } else if (result.isNew) {
+        showConfirmation(t('msg.saved.new.person'), 'success-new', displayName);
+        addToSession(displayName, true, 'persona');
+      } else {
+        showConfirmation(t('msg.saved.known.person', { count: result.person?.totalVisits || '?' }), 'success-known', displayName);
+        addToSession(displayName, false, 'persona');
+      }
+
+      resetForm();
+    } catch {
+      showToast(navigator.onLine ? t('msg.error.server') : t('msg.error.network'), 'error');
+      endSubmitError();
+      return;
+    }
+
+    scheduleSubmitCooldown();
+  }
+
+  function startSubmit() {
+    submitCooldown = true;
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.querySelector('span').textContent = t('entry.submitting');
+  }
+
+  function endSubmitError() {
+    submitCooldown = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.querySelector('span').textContent = t('entry.submit');
+    updateSubmitState();
+    lucide.createIcons();
+  }
+
+  function scheduleSubmitCooldown() {
     setTimeout(() => {
       submitCooldown = false;
       submitBtn.classList.remove('loading');
@@ -328,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ══════════════════════════════════════════
-     Session List (All Vehicles — daily, per user)
+     Session List
      ══════════════════════════════════════════ */
 
   function _todayStr() {
@@ -337,15 +546,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Adds a vehicle to the session list (new or known).
-   * @param {string} placa
+   * Adds an entry to the session list.
+   * @param {string} identifier - Plate number or person full name
    * @param {boolean} isNew
+   * @param {'vehicle'|'persona'} entryType
    */
-  function addToSession(placa, isNew) {
+  function addToSession(identifier, isNew, entryType) {
     const session = getSessionData();
     session.items.push({
-      placa,
+      identifier,
       isNew,
+      entryType,
       time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
     });
     saveSessionData(session);
@@ -359,8 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function getSessionData() {
     try {
       const stored = JSON.parse(localStorage.getItem(SESSION_STORE_KEY));
-      const today = _todayStr();
-      if (stored && stored.date === today && stored.user === currentUser) {
+      if (stored && stored.date === _todayStr() && stored.user === currentUser) {
         return stored;
       }
     } catch { /* fall through */ }
@@ -371,15 +581,13 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(SESSION_STORE_KEY, JSON.stringify(session));
   }
 
-  /** Loads and renders the session list on page load. */
   function loadSessionList() {
-    const session = getSessionData();
-    renderSessionList(session);
+    renderSessionList(getSessionData());
   }
 
   /**
    * Renders the session list DOM.
-   * @param {{ items: Array<{ placa: string, time: string, isNew: boolean }> }} session
+   * @param {{ items: Array }} session
    */
   function renderSessionList(session) {
     const items = session.items || [];
@@ -408,16 +616,17 @@ document.addEventListener('DOMContentLoaded', () => {
       badge.className = 'session-badge ' + (item.isNew ? 'session-badge-new' : 'session-badge-known');
       badge.textContent = item.isNew ? t('session.badge.new') : t('session.badge.known');
 
-      const plateSpan = document.createElement('span');
-      plateSpan.className = 'plate';
-      plateSpan.textContent = item.placa;
+      const idSpan = document.createElement('span');
+      idSpan.className = 'plate';
+      /* Show emoji prefix for persona entries */
+      idSpan.textContent = item.entryType === 'persona' ? `🚶 ${item.identifier}` : item.identifier;
 
       const timeSpan = document.createElement('span');
       timeSpan.className = 'time';
       timeSpan.textContent = item.time;
 
       el.appendChild(badge);
-      el.appendChild(plateSpan);
+      el.appendChild(idSpan);
       el.appendChild(timeSpan);
       sessionItems.appendChild(el);
     });
@@ -426,7 +635,6 @@ document.addEventListener('DOMContentLoaded', () => {
     sessionCount.textContent = items.length;
     sessionCount.classList.remove('hidden');
 
-    /* Show copy button only if there are new vehicles */
     if (newCount > 0) {
       copySessionBtn.classList.remove('hidden');
       const btnSpan = copySessionBtn.querySelector('span');
@@ -435,32 +643,37 @@ document.addEventListener('DOMContentLoaded', () => {
       copySessionBtn.classList.add('hidden');
     }
 
-    /* Scroll to bottom */
     sessionItems.scrollTop = sessionItems.scrollHeight;
   }
 
-  /** Copies only NEW vehicles from today's session to clipboard. */
+  /**
+   * Copies all NEW entries from today's session to clipboard.
+   * For vehicles: copies the plate number.
+   * For persons: copies the id_number if available, otherwise full name.
+   */
   async function copySessionPlates() {
     const session = getSessionData();
-    const plates = (session.items || []).filter(s => s.isNew).map(s => s.placa).join('\n');
+    const lines = (session.items || [])
+      .filter(s => s.isNew)
+      .map(s => s.identifier)
+      .join('\n');
 
     try {
-      await navigator.clipboard.writeText(plates);
+      await navigator.clipboard.writeText(lines);
       const btnText = copySessionBtn.querySelector('span');
       const original = btnText.textContent;
       btnText.textContent = t('session.copied');
       copySessionBtn.classList.add('btn-success');
       copySessionBtn.classList.remove('btn-secondary');
-
       setTimeout(() => {
         btnText.textContent = original;
         copySessionBtn.classList.remove('btn-success');
         copySessionBtn.classList.add('btn-secondary');
       }, 2000);
     } catch {
-      /* Fallback: textarea copy */
+      /* Fallback */
       const textarea = document.createElement('textarea');
-      textarea.value = plates;
+      textarea.value = lines;
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand('copy');
@@ -473,11 +686,13 @@ document.addEventListener('DOMContentLoaded', () => {
      ══════════════════════════════════════════ */
 
   /**
-   * Shows the vehicle status badge (new=green, known=blue).
-   * @param {boolean} isNew
-   * @param {Object|null} vehicle
+   * Shows the vehicle/person status badge.
+   *
+   * @param {boolean} isNew - true = new, false = known
+   * @param {Object|null} data - vehicle or person data (null if new)
+   * @param {'vehicle'|'persona'} entryType
    */
-  function showStatusBadge(isNew, vehicle) {
+  function showStatusBadge(isNew, data, entryType) {
     vehicleStatus.innerHTML = '';
     vehicleStatus.classList.remove('hidden');
 
@@ -492,36 +707,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mainText = document.createElement('div');
     mainText.className = 'status-text';
-    mainText.textContent = isNew ? t('badge.new') : t('badge.known');
+
+    if (entryType === 'persona') {
+      mainText.textContent = isNew ? t('badge.new.person') : t('badge.known.person');
+    } else {
+      mainText.textContent = isNew ? t('badge.new') : t('badge.known');
+    }
 
     textDiv.appendChild(mainText);
 
-    if (!isNew && vehicle) {
+    if (!isNew && data) {
       const detail = document.createElement('div');
       detail.className = 'status-detail';
-      /* Convert YYYY-MM-DD from backend to DD/MM/YYYY for display */
-      const lastSeenDisplay = vehicle.lastSeen && vehicle.lastSeen.includes('-')
-        ? vehicle.lastSeen.split('-').reverse().join('/')
-        : vehicle.lastSeen;
-      detail.textContent = `${t('badge.known.lastSeen')}: ${lastSeenDisplay} — ${vehicle.totalVisits} ${t('badge.known.totalVisits')}`;
+      const lastSeenDisplay = data.lastSeen && data.lastSeen.includes('-')
+        ? data.lastSeen.split('-').reverse().join('/')
+        : (data.lastSeen || '');
+      detail.textContent = `${t('badge.known.lastSeen')}: ${lastSeenDisplay} — ${data.totalVisits} ${t('badge.known.totalVisits')}`;
       textDiv.appendChild(detail);
 
-      /* Hint: click to see history */
-      const hint = document.createElement('div');
-      hint.className = 'status-card-hint';
-      hint.textContent = t('badge.known.clickHistory');
-      textDiv.appendChild(hint);
+      /* History hint + click (vehicles only) */
+      if (entryType === 'vehicle' && data.vehicleId) {
+        const hint = document.createElement('div');
+        hint.className = 'status-card-hint';
+        hint.textContent = t('badge.known.clickHistory');
+        textDiv.appendChild(hint);
 
-      /* Make card clickable */
-      card.classList.add('status-card-clickable');
-      card.setAttribute('role', 'button');
-      card.setAttribute('tabindex', '0');
-      card.addEventListener('click', () => openHistoryModal(vehicle.vehicleId, vehicle.placa || placaInput.value));
-      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openHistoryModal(vehicle.vehicleId, vehicle.placa || placaInput.value); });
+        card.classList.add('status-card-clickable');
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.addEventListener('click', () => openHistoryModal(data.vehicleId, data.placa || placaInput.value));
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ')
+            openHistoryModal(data.vehicleId, data.placa || placaInput.value);
+        });
+      }
     } else if (isNew) {
       const detail = document.createElement('div');
       detail.className = 'status-detail';
-      detail.textContent = t('badge.new.subtitle');
+      detail.textContent = entryType === 'persona'
+        ? t('badge.new.person.subtitle')
+        : t('badge.new.subtitle');
       textDiv.appendChild(detail);
     }
 
@@ -530,51 +755,59 @@ document.addEventListener('DOMContentLoaded', () => {
     vehicleStatus.appendChild(card);
   }
 
-  /** Hides the vehicle status badge. */
   function hideStatus() {
     vehicleStatus.classList.add('hidden');
     vehicleStatus.innerHTML = '';
   }
 
-  /**
-   * Shows an inline error below the placa field.
-   * @param {string} message
-   */
   function showError(message) {
     placaError.textContent = message;
     placaError.classList.remove('hidden');
     placaInput.classList.add('error');
   }
 
-  /** Hides the placa error. */
   function hideError() {
     placaError.classList.add('hidden');
     placaError.textContent = '';
     placaInput.classList.remove('error');
   }
 
+  function showIdError(message) {
+    idError.textContent = message;
+    idError.classList.remove('hidden');
+    idNumberInput.classList.add('error');
+  }
+
+  function hideIdError() {
+    idError.classList.add('hidden');
+    idError.textContent = '';
+    idNumberInput.classList.remove('error');
+  }
+
   /**
-   * Shows/hides the loading spinner on placa input.
+   * Shows/hides the loading spinner.
+   * @param {'vehicle'|'persona'} mode
    * @param {boolean} show
    */
-  function showSpinner(show) {
-    placaSpinner.classList.toggle('hidden', !show);
+  function showSpinner(mode, show) {
+    if (mode === 'persona') {
+      idSpinner.classList.toggle('hidden', !show);
+    } else {
+      placaSpinner.classList.toggle('hidden', !show);
+    }
   }
 
   /**
    * Shows a confirmation banner below the form.
    * @param {string} message
    * @param {'success-new'|'success-known'} type
-   * @param {string} placa
+   * @param {string} identifier
    */
-  function showConfirmation(message, type, placa) {
+  function showConfirmation(message, type, identifier) {
     confirmation.className = 've-confirmation ' + type;
-    confirmation.textContent = `✅ ${message} — ${placa}`;
+    confirmation.textContent = `✅ ${message} — ${identifier}`;
     confirmation.classList.remove('hidden');
-
-    setTimeout(() => {
-      confirmation.classList.add('hidden');
-    }, 5000);
+    setTimeout(() => confirmation.classList.add('hidden'), 5000);
   }
 
   /**
@@ -588,41 +821,72 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
     container.appendChild(toast);
-
     setTimeout(() => {
       toast.style.opacity = '0';
       setTimeout(() => toast.remove(), 300);
     }, 4000);
   }
 
-  /** Updates the submit button enabled/disabled state. */
+  /** Updates submit button enabled/disabled state based on current mode. */
   function updateSubmitState() {
-    const placa = placaInput.value.trim();
-    const isValid = placa.length >= CONFIG.PLACA_MIN_LENGTH && placa.length <= CONFIG.PLACA_MAX_LENGTH && CONFIG.PLACA_PATTERN.test(placa);
-    submitBtn.disabled = !isValid || submitCooldown;
+    if (selectedTipo === 'persona') {
+      const id = idNumberInput.value.trim();
+      const isValid = CONFIG.ID_NUMBER_PATTERN.test(id) &&
+        id.length >= CONFIG.ID_NUMBER_MIN_LENGTH &&
+        id.length <= CONFIG.ID_NUMBER_MAX_LENGTH;
+      submitBtn.disabled = !isValid || submitCooldown;
+    } else {
+      const placa = placaInput.value.trim();
+      const isValid = placa.length >= CONFIG.PLACA_MIN_LENGTH &&
+        placa.length <= CONFIG.PLACA_MAX_LENGTH &&
+        CONFIG.PLACA_PATTERN.test(placa);
+      submitBtn.disabled = !isValid || submitCooldown;
+    }
   }
 
-  /** Resets the form to empty state. */
+  /** Resets the form to empty state after a successful save. */
   function resetForm() {
     placaInput.value = '';
+    firstNameInput.value = '';
+    lastNameInput.value = '';
+    idNumberInput.value = '';
     notesInput.value = '';
     charCount.textContent = '0';
     currentVehicle = null;
+    currentPerson  = null;
     hideError();
+    hideIdError();
     hideStatus();
     updateSubmitState();
-    placaInput.focus();
+    /* Focus the primary input for the current mode */
+    if (selectedTipo === 'persona') {
+      firstNameInput.focus();
+    } else {
+      placaInput.focus();
+    }
+  }
+
+  /** Updates lang toggle active state. */
+  function updateLangToggle() {
+    document.querySelectorAll('.lang-option').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === getCurrentLang());
+    });
   }
 
   /* ══════════════════════════════════════════
-     Visit History Modal
+     Visit History Modal (vehicle only)
      ══════════════════════════════════════════ */
 
   let _historyAutoCloseTimer = null;
-  let _historyData = []; // for copy-to-clipboard
+  let _historyData = [];
 
+  /**
+   * Opens the visit history modal for a vehicle.
+   * @param {string} vehicleId
+   * @param {string} placa
+   * @returns {Promise<void>}
+   */
   async function openHistoryModal(vehicleId, placa) {
-    /* Clear any previous auto-close timer */
     clearTimeout(_historyAutoCloseTimer);
     _historyData = [];
     veHistoryCopy.classList.add('hidden');
@@ -647,10 +911,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const dateEl = document.createElement('span');
           dateEl.className = 've-history-date';
           const dateOnly = entry.date ? String(entry.date).substring(0, 10) : '';
-          const dateParts = dateOnly.match(/^\d{4}-\d{2}-\d{2}$/)
+          dateEl.textContent = dateOnly.match(/^\d{4}-\d{2}-\d{2}$/)
             ? dateOnly.split('-').reverse().join('/')
             : (entry.date || '');
-          dateEl.textContent = dateParts;
 
           const timeEl = document.createElement('span');
           timeEl.className = 've-history-time';
@@ -665,15 +928,15 @@ document.addEventListener('DOMContentLoaded', () => {
             noteEl.textContent = entry.notes;
             item.appendChild(noteEl);
           }
+
           veHistoryBody.appendChild(item);
         });
         veHistoryCopy.classList.remove('hidden');
       }
 
-      /* Auto-close 10 seconds AFTER data is shown (not from when loading started) */
       _historyAutoCloseTimer = setTimeout(closeHistoryModal, 10000);
 
-    } catch (err) {
+    } catch {
       veHistoryBody.innerHTML = `<p class="text-sm text-muted" style="padding:var(--space-md) 0">${t('msg.error.server')}</p>`;
     }
   }
@@ -702,11 +965,9 @@ document.addEventListener('DOMContentLoaded', () => {
       veHistoryCopy.textContent = '✓ הועתק';
       setTimeout(() => { veHistoryCopy.textContent = orig; }, 2000);
     } catch {
-      /* fallback for older browsers */
       const ta = document.createElement('textarea');
       ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
+      ta.style.cssText = 'position:fixed;opacity:0';
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
@@ -718,10 +979,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ══════════════════════════════════════════
-     Online/Offline
+     Online / Offline
      ══════════════════════════════════════════ */
 
-  /** Sets up network status listeners. */
   function setupOnlineOfflineListeners() {
     function updateOnlineStatus() {
       offlineBar.classList.toggle('active', !navigator.onLine);
@@ -730,13 +990,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('online', () => {
       updateOnlineStatus();
       showToast(t('msg.online'), 'success');
-
-      /* Process queued entries */
       if (DataStore.getQueueSize() > 0) {
         DataStore.processQueue().then(result => {
-          if (result.sent > 0) {
-            showToast(`${result.sent} ${t('msg.online')}`, 'success');
-          }
+          if (result.sent > 0) showToast(`${result.sent} ${t('msg.online')}`, 'success');
         });
       }
     });
@@ -747,12 +1003,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     updateOnlineStatus();
-  }
-
-  /** Updates lang toggle active state. */
-  function updateLangToggle() {
-    document.querySelectorAll('.lang-option').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.lang === getCurrentLang());
-    });
   }
 });

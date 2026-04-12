@@ -605,3 +605,77 @@
     max-width: none;
   }
 }
+
+/* ── 5-column KPI Grid ── */
+.kpi-grid-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .kpi-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .kpi-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Settings Section ── */
+.settings-users {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.settings-users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.settings-users-header h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.settings-add-user {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: flex-end;
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.settings-add-user .form-input,
+.settings-add-user .form-select {
+  flex: 1;
+  min-width: 140px;
+}
+
+.settings-users-table {
+  overflow-x: auto;
+}
+
+/* ── New Password Display ── */
+.new-password-display {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.12em;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  text-align: center;
+  border: 2px dashed var(--color-primary);
+  user-select: all;
+}

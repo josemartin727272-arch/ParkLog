@@ -265,23 +265,25 @@ const DataStore = (() => {
     },
 
     /**
-     * Saves a new entry. Falls back to offline queue on network error.
+     * Saves a new vehicle entry. Falls back to offline queue on network error.
      *
-     * @param {{ placa: string, tipo: string, notes: string }} data
+     * @param {{ placa: string, tipo: string, notes: string, createdBy: string, entryDate: string }} data
      * @returns {Promise<{ success: boolean, isNew: boolean, entry: Object, vehicle: Object, queued?: boolean }>}
      */
     async saveEntry(data) {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
       const entryData = {
         placa: (data.placa || '').toUpperCase().trim(),
         tipo: data.tipo || CONFIG.DEFAULT_VEHICLE_TYPE,
         notes: (data.notes || '').trim(),
-        createdBy: data.createdBy || 'anonymous',
-        entryDate: data.entryDate || null  // client-side local date (YYYY-MM-DD)
+        createdBy: data.createdBy || (session ? session.display_name : 'anonymous'),
+        userId: session ? session.user_id : '',
+        entryDate: data.entryDate || null
       };
 
       try {
         const result = await apiPost({ action: 'createEntry', data: entryData });
-        clearCache(); // Invalidate dashboard cache after new entry
+        clearCache();
         return result;
       } catch (err) {
         if (!navigator.onLine) {
@@ -290,6 +292,114 @@ const DataStore = (() => {
         }
         throw err;
       }
+    },
+
+    /**
+     * Looks up a person by ID number.
+     *
+     * @param {string} idNumber
+     * @returns {Promise<{ found: boolean, person_id?: string, firstName?: string, lastName?: string, lastSeen?: string, totalVisits?: number }>}
+     */
+    async lookupPerson(idNumber) {
+      return apiGet('lookupPerson', { idNumber: idNumber.trim() });
+    },
+
+    /**
+     * Saves a person entry. Falls back to offline queue on network error.
+     *
+     * @param {{ firstName: string, lastName: string, idNumber: string, notes: string, createdBy: string, entryDate: string }} data
+     * @returns {Promise<{ success: boolean, isNew: boolean, person: Object, queued?: boolean }>}
+     */
+    async savePersonEntry(data) {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+      const entryData = {
+        firstName: (data.firstName || '').trim(),
+        lastName: (data.lastName || '').trim(),
+        idNumber: (data.idNumber || '').trim(),
+        notes: (data.notes || '').trim(),
+        createdBy: data.createdBy || (session ? session.display_name : 'anonymous'),
+        userId: session ? session.user_id : '',
+        entryDate: data.entryDate || null,
+        entryType: 'persona'
+      };
+
+      try {
+        const result = await apiPost({ action: 'savePersonEntry', data: entryData });
+        clearCache();
+        return result;
+      } catch (err) {
+        if (!navigator.onLine) {
+          queueEntry(entryData);
+          return { success: true, queued: true, isNew: false, person: {} };
+        }
+        throw err;
+      }
+    },
+
+    /**
+     * Gets persons with optional filters (cached).
+     *
+     * @param {{ search?: string, dateFrom?: string, dateTo?: string }} [filters={}]
+     * @returns {Promise<{ persons: Array, total: number }>}
+     */
+    async getPersons(filters = {}) {
+      const cacheKey = 'persons:' + JSON.stringify(filters);
+      return getCached(cacheKey, () => apiGet('getPersons', filters));
+    },
+
+    /**
+     * Authenticates a user against the Users sheet.
+     *
+     * @param {string} displayName
+     * @param {string} password
+     * @returns {Promise<{ success: boolean, user_id?: string, display_name?: string, role?: string, error?: string }>}
+     */
+    async login(displayName, password) {
+      return apiPost({ action: 'login', displayName, password });
+    },
+
+    /**
+     * Creates a new user (admin only).
+     *
+     * @param {string} displayName
+     * @param {'admin'|'employee'} role
+     * @returns {Promise<{ success: boolean, plaintext_password?: string }>}
+     */
+    async createUser(displayName, role) {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+      return apiPost({ action: 'createUser', displayName, role, requesterId: session?.user_id || '' });
+    },
+
+    /**
+     * Toggles a user's is_active flag (admin only).
+     *
+     * @param {string} userId
+     * @returns {Promise<{ success: boolean, is_active: boolean }>}
+     */
+    async toggleUser(userId) {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+      return apiPost({ action: 'toggleUser', userId, requesterId: session?.user_id || '' });
+    },
+
+    /**
+     * Resets a user's password and returns the new plaintext (admin only).
+     *
+     * @param {string} userId
+     * @returns {Promise<{ success: boolean, plaintext_password: string }>}
+     */
+    async resetPassword(userId) {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+      return apiPost({ action: 'resetPassword', userId, requesterId: session?.user_id || '' });
+    },
+
+    /**
+     * Gets all users (admin only).
+     *
+     * @returns {Promise<{ users: Array }>}
+     */
+    async getUsers() {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+      return apiGet('getUsers', { requesterId: session?.user_id || '' });
     },
 
     /**

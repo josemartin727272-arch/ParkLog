@@ -5,6 +5,49 @@ Format: [version] — date — description
 
 ---
 
+## [2.0.0] — 2026-04-12
+
+### Added — Persona Entry Type
+- **New entry type `persona` (🚶)** across VaultEntry and CommandCenter
+  - Tipo selector now has three buttons: `auto` (🚗), `moto` (🛵), `persona` (🚶)
+  - Selecting `persona` hides the plate field and shows `first_name`, `last_name`, `id_number` fields
+  - `id_number` validation: digits only, 5–12 characters, unique identifier
+  - New/known detection for persons: looks up by `id_number` in Persons sheet
+  - Session list shows 🚶 + full name for person entries
+- **New Google Sheet: Persons** — `person_id`, `id_number`, `first_name`, `last_name`, `first_seen`, `last_seen`, `total_visits`, `notes`, `created_by`
+- **Entries sheet** gains two new columns: `entry_type` (`vehicle`/`persona`) and `person_id`
+- **CommandCenter**: new "Total personas" KPI card (5th card), `entry_type` filter, persona rows in table and exports
+- **Apps Script actions**: `lookupPerson`, `savePersonEntry`, `getPersons`
+- **`sheets.js`**: `lookupPerson()`, `savePersonEntry()`, `getPersons()` methods
+
+### Added — User Authentication
+- **New Google Sheet: Users** — `user_id`, `display_name`, `password_hash` (SHA-256 + salt), `role` (`admin`/`employee`), `is_active`, `created_at`
+- **`auth.js`** — new module for sessionStorage-based sessions with 8-hour TTL
+  - `getSession()`, `setSession()`, `clearSession()`, `requireAuth()`, `isAdmin()`
+- **Both interfaces** now require login via username + password (replaces shared passphrase)
+  - Login calls `DataStore.login()` → Apps Script validates against Users sheet
+  - Session stored in sessionStorage, expires after 8 hours
+- **CommandCenter Settings tab** (admin only): add user, toggle active/inactive, reset password
+  - New password displayed once in a modal (monospace, `user-select: all`), never stored in plaintext
+  - Admin cannot deactivate their own account
+- **`setupSheets()`** seeds initial admin user and logs one-time plaintext password to Apps Script Logger
+- **Apps Script actions**: `login`, `createUser`, `toggleUser`, `resetPassword`, `getUsers`
+- **`sheets.js`**: `login()`, `createUser()`, `toggleUser()`, `resetPassword()`, `getUsers()` methods
+
+### Added — Session Invalidation
+- `PARKLOG_VERSION: '2.0'` in `config.js` — on page load, if stored version differs, all localStorage and sessionStorage is cleared (forces re-login after deploy)
+
+### Removed
+- Shared-password authentication (`VAULT_PASSWORD`, `CC_PASSWORD`) removed from `config.js`
+
+### Changed
+- `config.js`: added `ID_NUMBER_MIN_LENGTH`, `ID_NUMBER_MAX_LENGTH`, `ID_NUMBER_PATTERN`, `ENTRY_TYPES`, `SESSION_TTL_MS`
+- `commandcenter.css`: added `.kpi-grid-5` (5-column responsive grid), settings panel styles, `.new-password-display`
+- `getDashboardData()` (Apps Script + `sheets.js`): returns `totalPersons` KPI
+- `updateNotes()` (Apps Script): handles `'person'` type targeting Persons sheet col 8
+
+---
+
 ## [1.2.0] — 2026-03-08
 
 ### Fixed — Critical

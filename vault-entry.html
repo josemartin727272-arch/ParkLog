@@ -6,6 +6,7 @@
   <title>ListaCarro — ParkLog</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="vault-entry.css">
+  <script src="version-check.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -65,43 +66,95 @@
       <!-- Entry Form Card -->
       <div class="card ve-form-card">
 
-        <!-- Placa Field -->
-        <div class="form-group">
-          <label class="form-label" for="placa-input" data-i18n="entry.placa.label">Número de Placa</label>
-          <div class="placa-input-wrapper">
-            <input
-              type="text"
-              id="placa-input"
-              class="form-input placa-input"
-              maxlength="10"
-              autocomplete="off"
-              autocapitalize="characters"
-              spellcheck="false"
-              data-i18n="entry.placa.placeholder"
-              data-i18n-attr="placeholder"
-            >
-            <div id="placa-spinner" class="placa-spinner hidden">
-              <i data-lucide="loader-2" class="spin"></i>
-            </div>
-          </div>
-          <div id="placa-error" class="form-error hidden" role="alert"></div>
-        </div>
-
-        <!-- Vehicle Status Badge -->
-        <div id="vehicle-status" class="hidden" role="status" aria-live="polite"></div>
-
-        <!-- Tipo Field -->
+        <!-- Tipo Field — FIRST, determines which identifier fields appear -->
         <div class="form-group">
           <label class="form-label" data-i18n="entry.tipo.label">Tipo de Vehículo</label>
-          <div class="toggle-group" role="radiogroup" aria-label="Vehicle type">
+          <div class="toggle-group" role="radiogroup" aria-label="Entry type">
             <button type="button" class="toggle-option active" data-tipo="auto" role="radio" aria-checked="true">
               🚗 <span data-i18n="entry.tipo.auto">Automóvil</span>
             </button>
             <button type="button" class="toggle-option" data-tipo="moto" role="radio" aria-checked="false">
               🛵 <span data-i18n="entry.tipo.moto">Motocicleta</span>
             </button>
+            <button type="button" class="toggle-option" data-tipo="persona" role="radio" aria-checked="false">
+              🚶 <span data-i18n="entry.tipo.persona">Persona</span>
+            </button>
           </div>
         </div>
+
+        <!-- Vehicle Fields (auto / moto) -->
+        <div id="vehicle-fields">
+          <div class="form-group">
+            <label class="form-label" for="placa-input" data-i18n="entry.placa.label">Número de Placa</label>
+            <div class="placa-input-wrapper">
+              <input
+                type="text"
+                id="placa-input"
+                class="form-input placa-input"
+                maxlength="10"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                data-i18n="entry.placa.placeholder"
+                data-i18n-attr="placeholder"
+              >
+              <div id="placa-spinner" class="placa-spinner hidden">
+                <i data-lucide="loader-2" class="spin"></i>
+              </div>
+            </div>
+            <div id="placa-error" class="form-error hidden" role="alert"></div>
+          </div>
+        </div>
+
+        <!-- Person Fields (persona only, hidden by default) -->
+        <div id="person-fields" class="hidden">
+          <div class="form-group">
+            <label class="form-label" for="first-name-input" data-i18n="entry.person.firstName.label">Nombre</label>
+            <input
+              type="text"
+              id="first-name-input"
+              class="form-input"
+              maxlength="50"
+              autocomplete="given-name"
+              data-i18n="entry.person.firstName.placeholder"
+              data-i18n-attr="placeholder"
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="last-name-input" data-i18n="entry.person.lastName.label">Apellido</label>
+            <input
+              type="text"
+              id="last-name-input"
+              class="form-input"
+              maxlength="50"
+              autocomplete="family-name"
+              data-i18n="entry.person.lastName.placeholder"
+              data-i18n-attr="placeholder"
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id-number-input" data-i18n="entry.person.idNumber.label">Cédula</label>
+            <div class="placa-input-wrapper">
+              <input
+                type="text"
+                id="id-number-input"
+                class="form-input"
+                maxlength="12"
+                inputmode="numeric"
+                autocomplete="off"
+                data-i18n="entry.person.idNumber.placeholder"
+                data-i18n-attr="placeholder"
+              >
+              <div id="id-spinner" class="placa-spinner hidden">
+                <i data-lucide="loader-2" class="spin"></i>
+              </div>
+            </div>
+            <div id="id-error" class="form-error hidden" role="alert"></div>
+          </div>
+        </div>
+
+        <!-- Vehicle / Person Status Badge -->
+        <div id="vehicle-status" class="hidden" role="status" aria-live="polite"></div>
 
         <!-- Notes Field -->
         <div class="form-group">
@@ -130,22 +183,22 @@
       <!-- Confirmation Banner (hidden by default) -->
       <div id="confirmation" class="ve-confirmation hidden" role="status" aria-live="polite"></div>
 
-      <!-- Session New Vehicles List -->
+      <!-- Session Entries List -->
       <div id="session-list" class="card session-list">
         <div class="session-list-header">
           <h3>
             <i data-lucide="sparkles" style="width:18px;height:18px;color:var(--color-success)"></i>
-            <span data-i18n="session.title">Vehículos en esta sesión</span>
+            <span data-i18n="session.title">Entradas en esta sesión</span>
             <span id="session-count" class="session-count hidden">0</span>
           </h3>
           <button id="copy-session-btn" class="btn btn-sm btn-secondary hidden">
             <i data-lucide="copy" style="width:16px;height:16px"></i>
-            <span data-i18n="session.copy">Copiar todas las placas</span>
+            <span data-i18n="session.copy">Copiar nuevos</span>
           </button>
         </div>
         <div id="session-items" class="session-items">
           <div class="empty-state" style="padding:var(--space-lg)">
-            <p class="text-sm text-muted" data-i18n="session.empty">Aún no hay vehículos nuevos en esta sesión</p>
+            <p class="text-sm text-muted" data-i18n="session.empty">Aún no hay entradas en esta sesión</p>
           </div>
         </div>
       </div>
@@ -171,6 +224,7 @@
 
   <script src="config.js"></script>
   <script src="i18n.js"></script>
+  <script src="auth.js"></script>
   <script src="sheets.js"></script>
   <script src="vault-entry.js"></script>
 </body>
