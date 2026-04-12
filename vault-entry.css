@@ -57,31 +57,34 @@
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding-inline-end: 5rem;
+  padding-inline-start: 3rem;
+  padding-inline-end: 3rem;
 }
 
 .placa-clear {
   position: absolute;
-  inset-inline-end: 2.75rem;
+  inset-inline-start: var(--space-sm);
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
   border: none;
   cursor: pointer;
-  color: var(--color-text-muted);
-  font-size: 1rem;
+  color: #fff;
+  font-size: 0.85rem;
   line-height: 1;
-  padding: 0.25rem;
-  border-radius: var(--radius-sm);
-  min-width: 44px;
-  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
 }
 
 .placa-clear:hover {
-  color: var(--color-text);
+  background: var(--color-primary-hover);
 }
 
 .placa-spinner {
