@@ -227,8 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
     e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
     e.target.setSelectionRange(pos, pos);
 
-    placaClear.classList.toggle('hidden', e.target.value.length === 0);
-
     hideError();
     hideStatus();
     currentVehicle = null;
