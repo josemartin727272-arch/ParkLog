@@ -15,7 +15,7 @@ const CONFIG = {
    * App version — bump this to invalidate all stored sessions and localStorage.
    * Change 3: bumped to '2.0' to force re-login for all users on v2.0 deploy.
    */
-  PARKLOG_VERSION: '2.0',
+  PARKLOG_VERSION: '2.1',
 
   /** Placa validation */
   PLACA_MIN_LENGTH: 2,

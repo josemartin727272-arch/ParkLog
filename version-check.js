@@ -12,7 +12,7 @@
  * CONFIG.PARKLOG_VERSION in config.js to the same value.
  */
 (function () {
-  var CURRENT_VERSION = '2.0';
+  var CURRENT_VERSION = '2.1';
   var VERSION_KEY     = 'parklog-version';
 
   if (localStorage.getItem(VERSION_KEY) !== CURRENT_VERSION) {
