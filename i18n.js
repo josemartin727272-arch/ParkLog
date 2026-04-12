@@ -162,6 +162,11 @@ const TRANSLATIONS = {
 
     /* ── Persona Entry Type ── */
     'entry.tipo.persona': 'Persona',
+    'entry.location.label': 'Ubicación',
+    'entry.location.central': 'Estación Central',
+    'entry.location.small': 'Estación Pequeña',
+    'entry.location.environ': 'Estación Entorno',
+    'entry.location.error': 'Selecciona una ubicación',
     'entry.person.firstName.label': 'Nombre',
     'entry.person.lastName.label': 'Apellido',
     'entry.person.idNumber.label': 'Cédula',
@@ -363,6 +368,11 @@ const TRANSLATIONS = {
 
     /* ── Persona Entry Type ── */
     'entry.tipo.persona': 'הולך רגל',
+    'entry.location.label': 'מיקום',
+    'entry.location.central': 'תחנה מרכזית',
+    'entry.location.small': 'תחנה קטנה',
+    'entry.location.environ': 'תחנת סביבה',
+    'entry.location.error': 'יש לבחור מיקום',
     'entry.person.firstName.label': 'שם פרטי',
     'entry.person.lastName.label': 'שם משפחה',
     'entry.person.idNumber.label': 'ת.ז.',

@@ -177,6 +177,23 @@
           </div>
         </div>
 
+        <!-- Location Field -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="entry.location.label">Ubicación</label>
+          <div class="toggle-group" role="radiogroup" aria-label="Location">
+            <button type="button" class="toggle-option" data-location="central" role="radio" aria-checked="false">
+              <span data-i18n="entry.location.central">Estación Central</span>
+            </button>
+            <button type="button" class="toggle-option" data-location="small" role="radio" aria-checked="false">
+              <span data-i18n="entry.location.small">Estación Pequeña</span>
+            </button>
+            <button type="button" class="toggle-option" data-location="environ" role="radio" aria-checked="false">
+              <span data-i18n="entry.location.environ">Estación Entorno</span>
+            </button>
+          </div>
+          <div id="location-error" class="form-error hidden" role="alert"></div>
+        </div>
+
         <!-- Submit Button -->
         <button id="submit-btn" class="btn btn-primary btn-block ve-submit" disabled>
           <i data-lucide="save" style="width:20px;height:20px"></i>

@@ -255,12 +255,12 @@ function createEntry(data) {
   }
 
   var entryId = Utilities.getUuid();
-  var entryRow = [entryId, vehicleId, placa, dateStr, timeStr, notes, data.createdBy || 'anonymous', 'vehicle', ''];
+  var entryRow = [entryId, vehicleId, placa, dateStr, timeStr, notes, data.createdBy || 'anonymous', 'vehicle', '', data.location || ''];
   if (entriesSheet.getLastRow() <= 1) {
     entriesSheet.appendRow(entryRow);
   } else {
     entriesSheet.insertRowAfter(1);
-    entriesSheet.getRange(2, 1, 1, 9).setValues([entryRow]);
+    entriesSheet.getRange(2, 1, 1, 10).setValues([entryRow]);
   }
 
   /* VisitLog mirror */
@@ -523,12 +523,12 @@ function savePersonEntry(data) {
 
   /* Create entry row — placa field stores id_number for denormalization */
   var entryId  = Utilities.getUuid();
-  var entryRow = [entryId, '', idNumber, dateStr, timeStr, notes, data.createdBy || 'anonymous', 'persona', personId];
+  var entryRow = [entryId, '', idNumber, dateStr, timeStr, notes, data.createdBy || 'anonymous', 'persona', personId, data.location || ''];
   if (entriesSheet.getLastRow() <= 1) {
     entriesSheet.appendRow(entryRow);
   } else {
     entriesSheet.insertRowAfter(1);
-    entriesSheet.getRange(2, 1, 1, 9).setValues([entryRow]);
+    entriesSheet.getRange(2, 1, 1, 10).setValues([entryRow]);
   }
 
   return {
@@ -984,7 +984,7 @@ function getSheet(name) {
     if (name === 'Vehicles') {
       sheet.appendRow(['vehicle_id', 'placa', 'tipo', 'first_seen', 'last_seen', 'total_visits', 'notes', 'created_by', 'notes_updated']);
     } else if (name === 'Entries') {
-      sheet.appendRow(['entry_id', 'vehicle_id', 'placa', 'entry_date', 'entry_time', 'notes_entry', 'created_by', 'entry_type', 'person_id']);
+      sheet.appendRow(['entry_id', 'vehicle_id', 'placa', 'entry_date', 'entry_time', 'notes_entry', 'created_by', 'entry_type', 'person_id', 'location']);
     } else if (name === 'VisitLog') {
       sheet.appendRow(['placa', 'tipo', 'visit_date', 'visit_time', 'created_by']);
     } else if (name === 'Persons') {

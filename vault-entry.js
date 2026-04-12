@@ -39,8 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const idError         = document.getElementById('id-error');
 
   /* Shared */
-  const vehicleStatus = document.getElementById('vehicle-status');
-  const notesInput    = document.getElementById('notes-input');
+  const vehicleStatus  = document.getElementById('vehicle-status');
+  const notesInput     = document.getElementById('notes-input');
+  const locationError  = document.getElementById('location-error');
+  const locationBtns   = document.querySelectorAll('[data-location]');
   const charCount     = document.getElementById('char-count');
   const submitBtn     = document.getElementById('submit-btn');
   const confirmation  = document.getElementById('confirmation');
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── State ── */
   let currentUser     = '';
   let selectedTipo    = CONFIG.DEFAULT_VEHICLE_TYPE; // 'auto' | 'moto' | 'persona'
+  let selectedLocation = '';                         // 'central' | 'small' | 'environ'
   let currentVehicle  = null; // { isNew, vehicle } from vehicle lookup
   let currentPerson   = null; // { found, person_id, firstName, ... } from person lookup
   let lookupTimer     = null;
@@ -174,9 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
      Tipo Toggle
      ══════════════════════════════════════════ */
 
-  document.querySelectorAll('.toggle-option').forEach(btn => {
+  document.querySelectorAll('[data-tipo]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.toggle-option').forEach(b => {
+      document.querySelectorAll('[data-tipo]').forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-checked', 'false');
       });
@@ -184,6 +187,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.setAttribute('aria-checked', 'true');
       selectedTipo = btn.dataset.tipo;
       handleTipoChange();
+    });
+  });
+
+  locationBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      locationBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
+      selectedLocation = btn.dataset.location;
+      locationError.classList.add('hidden');
+      updateSubmitState();
     });
   });
 
@@ -425,6 +442,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!CONFIG.PLACA_PATTERN.test(placa) || placa.length > CONFIG.PLACA_MAX_LENGTH) {
       showError(t('msg.error.format')); placaInput.focus(); return;
     }
+    if (!selectedLocation) {
+      locationError.textContent = t('entry.location.error');
+      locationError.classList.remove('hidden');
+      return;
+    }
 
     startSubmit();
 
@@ -441,6 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
         result = await DataStore.saveEntry({
           placa, tipo: selectedTipo,
           notes: notesInput.value.trim(),
+          location: selectedLocation,
           createdBy, entryDate: _todayStr()
         });
       }
@@ -484,6 +507,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!firstName) { firstNameInput.focus(); return; }
     if (!lastName)  { lastNameInput.focus();  return; }
+    if (!selectedLocation) {
+      locationError.textContent = t('entry.location.error');
+      locationError.classList.remove('hidden');
+      return;
+    }
 
     startSubmit();
 
@@ -498,6 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
         result = await DataStore.savePersonEntry({
           firstName, lastName, idNumber,
           notes: notesInput.value.trim(),
+          location: selectedLocation,
           createdBy, entryDate: _todayStr()
         });
       }
@@ -842,18 +871,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /** Updates submit button enabled/disabled state based on current mode. */
   function updateSubmitState() {
+    const hasLocation = !!selectedLocation;
     if (selectedTipo === 'persona') {
       const id = idNumberInput.value.trim();
       const isValid = CONFIG.ID_NUMBER_PATTERN.test(id) &&
         id.length >= CONFIG.ID_NUMBER_MIN_LENGTH &&
         id.length <= CONFIG.ID_NUMBER_MAX_LENGTH;
-      submitBtn.disabled = !isValid || submitCooldown;
+      submitBtn.disabled = !isValid || !hasLocation || submitCooldown;
     } else {
       const placa = placaInput.value.trim();
       const isValid = placa.length >= CONFIG.PLACA_MIN_LENGTH &&
         placa.length <= CONFIG.PLACA_MAX_LENGTH &&
         CONFIG.PLACA_PATTERN.test(placa);
-      submitBtn.disabled = !isValid || submitCooldown;
+      submitBtn.disabled = !isValid || !hasLocation || submitCooldown;
     }
   }
 
@@ -867,6 +897,9 @@ document.addEventListener('DOMContentLoaded', () => {
     charCount.textContent = '0';
     currentVehicle = null;
     currentPerson  = null;
+    selectedLocation = '';
+    locationBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
+    locationError.classList.add('hidden');
     hideError();
     hideIdError();
     hideStatus();

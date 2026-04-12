@@ -276,6 +276,7 @@ const DataStore = (() => {
         placa: (data.placa || '').toUpperCase().trim(),
         tipo: data.tipo || CONFIG.DEFAULT_VEHICLE_TYPE,
         notes: (data.notes || '').trim(),
+        location: data.location || '',
         createdBy: data.createdBy || (session ? session.display_name : 'anonymous'),
         userId: session ? session.user_id : '',
         entryDate: data.entryDate || null
