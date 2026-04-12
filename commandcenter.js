@@ -1443,6 +1443,21 @@ document.addEventListener('DOMContentLoaded', () => {
       resetBtn.addEventListener('click', () => handleResetPassword(user.user_id, user.display_name));
       actionsTd.appendChild(resetBtn);
 
+      /* Delete user (can't delete self) */
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn btn-sm btn-ghost';
+      deleteBtn.style.color = 'var(--color-danger)';
+      deleteBtn.setAttribute('aria-label', t('settings.deleteUser'));
+      deleteBtn.title = t('settings.deleteUser');
+      deleteBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px"></i>';
+      if (session && user.user_id === session.user_id) {
+        deleteBtn.disabled = true;
+        deleteBtn.title    = t('settings.cantDeleteSelf');
+      } else {
+        deleteBtn.addEventListener('click', () => handleDeleteUser(user.user_id, user.display_name));
+      }
+      actionsTd.appendChild(deleteBtn);
+
       tr.appendChild(actionsTd);
       tbody.appendChild(tr);
     });
@@ -1473,6 +1488,22 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const result = await DataStore.resetPassword(userId);
       showNewPasswordModal(displayName, result.plaintext_password);
+    } catch (err) {
+      showToast(err.message || t('msg.error.server'), 'error');
+    }
+  }
+
+  /**
+   * @param {string} userId
+   * @param {string} displayName
+   */
+  async function handleDeleteUser(userId, displayName) {
+    const msg = t('settings.deleteUser.confirm').replace('{name}', displayName);
+    if (!confirm(msg)) return;
+    try {
+      await DataStore.deleteUser(userId);
+      showToast(t('settings.deleteUser.success'), 'success');
+      await loadUsers();
     } catch (err) {
       showToast(err.message || t('msg.error.server'), 'error');
     }

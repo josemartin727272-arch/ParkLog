@@ -393,6 +393,17 @@ const DataStore = (() => {
     },
 
     /**
+     * Deletes a user permanently (admin only).
+     *
+     * @param {string} userId
+     * @returns {Promise<{ success: boolean }>}
+     */
+    async deleteUser(userId) {
+      const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+      return apiPost({ action: 'deleteUser', userId, requesterId: session?.user_id || '' });
+    },
+
+    /**
      * Gets all users (admin only).
      *
      * @returns {Promise<{ users: Array }>}

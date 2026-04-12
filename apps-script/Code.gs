@@ -135,6 +135,9 @@ function doPost(e) {
       case 'resetPassword':
         result = resetUserPassword(body.userId, body.requesterId);
         break;
+      case 'deleteUser':
+        result = deleteUser(body.userId, body.requesterId);
+        break;
       default:
         return jsonResponse({ error: 'Unknown action: ' + action }, 400);
     }
@@ -839,6 +842,33 @@ function resetUserPassword(userId, requesterId) {
       var hashCol     = headers.indexOf('password_hash') + 1;
       sheet.getRange(i + 1, hashCol).setValue(hash);
       return { success: true, plaintext_password: password };
+    }
+  }
+
+  throw new Error('User not found');
+}
+
+/**
+ * Deletes a user permanently (admin only). Admin cannot delete themselves.
+ *
+ * @param {string} userId
+ * @param {string} requesterId
+ * @returns {{ success: boolean }}
+ * @throws {Error} If not admin, self-deletion, or user not found
+ */
+function deleteUser(userId, requesterId) {
+  if (!isRequesterAdmin(requesterId)) throw new Error('Admin access required');
+  if (userId === requesterId) throw new Error('Cannot delete yourself');
+
+  var sheet   = getSheet('Users');
+  var data    = sheet.getDataRange().getValues();
+  var headers = data[0];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = rowToObject(headers, data[i]);
+    if (row.user_id === userId) {
+      sheet.deleteRow(i + 1);
+      return { success: true };
     }
   }
 

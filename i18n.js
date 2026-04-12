@@ -205,6 +205,10 @@ const TRANSLATIONS = {
     'settings.newPasswordNote': 'Guarda esta contraseña — no se mostrará de nuevo',
     'settings.actions': 'Acciones',
     'settings.cantDeactivateSelf': 'No puedes desactivarte a ti mismo',
+    'settings.deleteUser': 'Eliminar usuario',
+    'settings.cantDeleteSelf': 'No puedes eliminarte a ti mismo',
+    'settings.deleteUser.confirm': '¿Eliminar usuario {name}? Esta acción no se puede deshacer.',
+    'settings.deleteUser.success': 'Usuario eliminado',
     'settings.addUser.success': 'Usuario creado'
   },
 
@@ -402,6 +406,10 @@ const TRANSLATIONS = {
     'settings.newPasswordNote': 'שמור סיסמה זו — לא תוצג שוב',
     'settings.actions': 'פעולות',
     'settings.cantDeactivateSelf': 'לא ניתן לנטרל את עצמך',
+    'settings.deleteUser': 'מחק משתמש',
+    'settings.cantDeleteSelf': 'לא ניתן למחוק את עצמך',
+    'settings.deleteUser.confirm': 'למחוק את המשתמש {name}? לא ניתן לבטל פעולה זו.',
+    'settings.deleteUser.success': 'משתמש נמחק',
     'settings.addUser.success': 'משתמש נוצר'
   }
 };
