@@ -201,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
     setupEventListeners();
     renderColumnToggle();
+    initSettings();
     loadData();
     setupOnlineOffline();
   }
@@ -394,9 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
       lastUpdatedEl.textContent = new Date().toLocaleTimeString('es', {
         hour: '2-digit', minute: '2-digit'
       });
-
-      /* Init settings panel for admin users */
-      await initSettings();
 
     } catch {
       showToast(navigator.onLine ? t('msg.error.server') : t('msg.error.network'), 'error');
