@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const placaInput    = document.getElementById('placa-input');
   const placaError    = document.getElementById('placa-error');
   const placaSpinner  = document.getElementById('placa-spinner');
+  const placaClear    = document.getElementById('placa-clear');
 
   /* Person fields */
   const personFields    = document.getElementById('person-fields');
@@ -226,6 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
     e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
     e.target.setSelectionRange(pos, pos);
 
+    placaClear.classList.toggle('hidden', e.target.value.length === 0);
+
     hideError();
     hideStatus();
     currentVehicle = null;
@@ -247,6 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   placaInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !submitBtn.disabled) handleSubmit();
+  });
+
+  placaClear.addEventListener('click', () => {
+    placaInput.value = '';
+    placaClear.classList.add('hidden');
+    hideError();
+    hideStatus();
+    currentVehicle = null;
+    clearTimeout(lookupTimer);
+    updateSubmitState();
+    placaInput.focus();
   });
 
   /* ══════════════════════════════════════════

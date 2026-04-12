@@ -57,7 +57,31 @@
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding-inline-end: 3rem;
+  padding-inline-end: 5rem;
+}
+
+.placa-clear {
+  position: absolute;
+  inset-inline-end: 2.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placa-clear:hover {
+  color: var(--color-text);
 }
 
 .placa-spinner {
