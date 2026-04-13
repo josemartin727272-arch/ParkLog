@@ -259,7 +259,9 @@ function createEntry(data) {
   }
 
   var entryId = Utilities.getUuid();
-  var entryRow = [entryId, vehicleId, placa, dateStr, timeStr, notes, data.createdBy || 'anonymous', 'vehicle', '', data.location || ''];
+  // Column order matches sheet: A=entry_id, B=vehicle_id, C=placa, D=entry_date, E=entry_time,
+  //   F=notes_entry, G=created_by, H=person_id, I=entry_type, J=location
+  var entryRow = [entryId, vehicleId, placa, dateStr, timeStr, notes, data.createdBy || 'anonymous', '', 'vehicle', data.location || ''];
   if (entriesSheet.getLastRow() <= 1) {
     entriesSheet.appendRow(entryRow);
   } else {
@@ -436,7 +438,9 @@ function getPersonHistory(personId) {
 
   for (var i = 1; i < data.length; i++) {
     var row = rowToObject(headers, data[i]);
-    if (row.person_id === personId) {
+    // Column H (index 7) holds person_id but has no header name — read by index
+    var rowPersonId = data[i][7] ? String(data[i][7]) : '';
+    if (rowPersonId === personId) {
       history.push({
         date:     formatDateTZ(row.entry_date, spreadsheetTZ),
         time:     extractTimeStr(row.entry_time),
@@ -494,7 +498,6 @@ function getTodayLocationsForPerson(personId) {
   var sheet = getSheet('Entries');
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
-  var pidIdx  = headers.indexOf('person_id');
   var dateIdx = headers.indexOf('entry_date');
   var locIdx  = headers.indexOf('location');
   var locations = [];
@@ -502,7 +505,8 @@ function getTodayLocationsForPerson(personId) {
   if (locIdx < 0) return locations;  // location column not in sheet yet
 
   for (var i = 1; i < data.length; i++) {
-    var pid       = pidIdx  >= 0 ? data[i][pidIdx]  : '';
+    // Column H (index 7) holds person_id but has no header name — read by index
+    var pid       = data[i][7] ? String(data[i][7]) : '';
     var entryDate = dateIdx >= 0 ? formatDate(data[i][dateIdx]) : '';
     var loc       = data[i][locIdx] || '';
     if (pid === personId && entryDate === today && loc) {
@@ -624,7 +628,9 @@ function savePersonEntry(data) {
 
   /* Create entry row — placa field stores id_number for denormalization */
   var entryId  = Utilities.getUuid();
-  var entryRow = [entryId, '', idNumber, dateStr, timeStr, notes, data.createdBy || 'anonymous', 'persona', personId, data.location || ''];
+  // Column order matches sheet: A=entry_id, B=vehicle_id, C=placa, D=entry_date, E=entry_time,
+  //   F=notes_entry, G=created_by, H=person_id, I=entry_type, J=location
+  var entryRow = [entryId, '', idNumber, dateStr, timeStr, notes, data.createdBy || 'anonymous', personId, 'persona', data.location || ''];
   if (entriesSheet.getLastRow() <= 1) {
     entriesSheet.appendRow(entryRow);
   } else {
