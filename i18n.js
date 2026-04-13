@@ -46,6 +46,7 @@ const TRANSLATIONS = {
     'badge.known.lastSeen': 'Última visita',
     'badge.known.totalVisits': 'visitas en total',
     'badge.known.clickHistory': '🔍 Toca para ver historial de visitas',
+    'badge.known.todayStation': 'Registrado hoy en',
 
     /* ── Session List ── */
     'session.title': 'Vehículos en esta sesión',
@@ -253,6 +254,7 @@ const TRANSLATIONS = {
     'badge.known.lastSeen': 'ביקור אחרון',
     'badge.known.totalVisits': 'ביקורים בסה"כ',
     'badge.known.clickHistory': '🔍 לחץ לצפייה בהיסטוריית ביקורים',
+    'badge.known.todayStation': 'נרשם היום ב',
 
     /* ── Session List ── */
     'session.title': 'רכבים בסשן זה',

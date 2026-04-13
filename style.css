@@ -483,14 +483,14 @@ h4 { font-size: 1.125rem; }
 }
 
 .form-warning {
-  color: #92400E;
-  background: #FEF3C7;
-  border: 1px solid var(--color-warning);
+  color: #991B1B;
+  background: #FEF2F2;
+  border: 2px solid var(--color-danger);
   border-radius: var(--radius-sm);
   padding: var(--space-sm) var(--space-md);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   margin-block-start: var(--space-sm);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .form-hint {

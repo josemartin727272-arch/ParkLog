@@ -786,6 +786,14 @@ document.addEventListener('DOMContentLoaded', () => {
       detail.textContent = `${t('badge.known.lastSeen')}: ${lastSeenDisplay} — ${data.totalVisits} ${t('badge.known.totalVisits')}`;
       textDiv.appendChild(detail);
 
+      /* Today's station line */
+      if (currentTodayLocations.length > 0) {
+        const todayStation = document.createElement('div');
+        todayStation.className = 'status-detail';
+        todayStation.textContent = `${t('badge.known.todayStation')}: ${locationLabel(currentTodayLocations[0])}`;
+        textDiv.appendChild(todayStation);
+      }
+
       /* History hint + click (vehicles only) */
       if (entryType === 'vehicle' && data.vehicleId) {
         const hint = document.createElement('div');
