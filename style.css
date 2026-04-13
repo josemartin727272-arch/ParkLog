@@ -503,6 +503,7 @@ h4 { font-size: 1.125rem; }
 /* ── Toggle / Radio Group ── */
 .toggle-group {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-xs);
   background: var(--color-bg);
   border-radius: var(--radius-md);
@@ -511,12 +512,13 @@ h4 { font-size: 1.125rem; }
 }
 
 .toggle-option {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-sm) var(--space-sm);
   border-radius: var(--radius-sm);
   border: none;
   background: transparent;

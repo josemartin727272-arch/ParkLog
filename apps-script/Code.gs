@@ -183,7 +183,8 @@ function searchVehicle(placa) {
           totalVisits: row.total_visits,
           notes: row.notes || '',
           notesUpdated: formatDate(row.notes_updated) || ''
-        }
+        },
+        todayLocations: getTodayLocationsForVehicle(row.vehicle_id)
       };
     }
   }
@@ -451,6 +452,50 @@ function getPersonHistory(personId) {
   return { history: history };
 }
 
+/**
+ * Gets today's entry locations for a vehicle (used for duplicate-location warning).
+ *
+ * @param {string} vehicleId
+ * @returns {string[]}
+ */
+function getTodayLocationsForVehicle(vehicleId) {
+  var today = formatDate(new Date());
+  var sheet = getSheet('Entries');
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var locations = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = rowToObject(headers, data[i]);
+    if (row.vehicle_id === vehicleId && formatDate(row.entry_date) === today && row.location) {
+      locations.push(row.location);
+    }
+  }
+  return locations;
+}
+
+/**
+ * Gets today's entry locations for a person (used for duplicate-location warning).
+ *
+ * @param {string} personId
+ * @returns {string[]}
+ */
+function getTodayLocationsForPerson(personId) {
+  var today = formatDate(new Date());
+  var sheet = getSheet('Entries');
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var locations = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = rowToObject(headers, data[i]);
+    if (row.person_id === personId && formatDate(row.entry_date) === today && row.location) {
+      locations.push(row.location);
+    }
+  }
+  return locations;
+}
+
 /* ══════════════════════════════════════════
    Persona Operations
    ══════════════════════════════════════════ */
@@ -474,13 +519,14 @@ function lookupPerson(idNumber) {
     var row = rowToObject(headers, data[i]);
     if (String(row.id_number) === idNumber) {
       return {
-        found:       true,
-        person_id:   row.person_id,
-        firstName:   row.first_name,
-        lastName:    row.last_name,
-        idNumber:    row.id_number,
-        lastSeen:    formatDate(row.last_seen),
-        totalVisits: row.total_visits
+        found:          true,
+        person_id:      row.person_id,
+        firstName:      row.first_name,
+        lastName:       row.last_name,
+        idNumber:       row.id_number,
+        lastSeen:       formatDate(row.last_seen),
+        totalVisits:    row.total_visits,
+        todayLocations: getTodayLocationsForPerson(row.person_id)
       };
     }
   }

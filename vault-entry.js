@@ -364,11 +364,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await DataStore.searchVehicle(placa);
       if (gen !== lookupGeneration) return;
       currentVehicle = result;
-      currentTodayLocations = [];
+      currentTodayLocations = result.todayLocations || [];
       locationWarning.classList.add('hidden');
       showStatusBadge(result.isNew, result.vehicle, 'vehicle');
-      if (!result.isNew && result.vehicle?.vehicleId) {
-        fetchTodayLocations('vehicle', result.vehicle.vehicleId);
+      if (!result.isNew && selectedLocation) {
+        checkAndShowDuplicateWarning();
       }
     } catch {
       if (gen !== lookupGeneration) return;
@@ -407,11 +407,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await DataStore.lookupPerson(idNumber);
       if (gen !== lookupGeneration) return;
       currentPerson = result;
-      currentTodayLocations = [];
+      currentTodayLocations = result.todayLocations || [];
       locationWarning.classList.add('hidden');
       showStatusBadge(!result.found, result.found ? result : null, 'persona');
-      if (result.found && result.person_id) {
-        fetchTodayLocations('persona', result.person_id);
+      if (result.found && selectedLocation) {
+        checkAndShowDuplicateWarning();
       }
     } catch {
       if (gen !== lookupGeneration) return;
@@ -1052,35 +1052,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ══════════════════════════════════════════
      Duplicate Location Check
      ══════════════════════════════════════════ */
-
-  /**
-   * Fetches today's entry locations for a known vehicle or person in the background.
-   * Stores results in currentTodayLocations and re-checks the warning.
-   * @param {'vehicle'|'persona'} type
-   * @param {string} id - vehicleId or person_id
-   */
-  async function fetchTodayLocations(type, id) {
-    try {
-      let history;
-      if (type === 'vehicle') {
-        const res = await DataStore.getVehicleHistory(id);
-        history = res.history || [];
-      } else {
-        const res = await DataStore.getPersonHistory(id);
-        history = res.history || [];
-      }
-      const today = _todayStr();
-      currentTodayLocations = history
-        .filter(e => {
-          const d = e.date ? String(e.date).substring(0, 10) : '';
-          return d === today && e.location;
-        })
-        .map(e => e.location);
-    } catch {
-      currentTodayLocations = [];
-    }
-    if (selectedLocation) checkAndShowDuplicateWarning();
-  }
 
   /**
    * Shows a warning if the selected location differs from any of today's existing entries.
