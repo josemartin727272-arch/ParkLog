@@ -1,3 +1,5 @@
+// v2.1-debug
+alert('vault-entry loaded v2.1');
 /**
  * ParkLog — VaultEntry Logic
  * Form handling, plate/person lookup, submission, session tracking.
