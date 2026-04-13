@@ -308,6 +308,16 @@
   padding-bottom: 2px;
 }
 
+.ve-history-location {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
 .ve-modal-footer {
   padding: var(--space-md) var(--space-lg);
   border-top: 1px solid var(--color-border);

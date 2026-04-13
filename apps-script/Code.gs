@@ -84,6 +84,9 @@ function doGet(e) {
       case 'getVehicleHistory':
         result = getVehicleHistory(e.parameter.vehicleId);
         break;
+      case 'getPersonHistory':
+        result = getPersonHistory(e.parameter.personId);
+        break;
       case 'getUsers':
         result = getUsers(e.parameter.requesterId);
         break;
@@ -397,9 +400,45 @@ function getVehicleHistory(vehicleId) {
     var row = rowToObject(headers, data[i]);
     if (row.vehicle_id === vehicleId) {
       history.push({
-        date:  formatDateTZ(row.entry_date, spreadsheetTZ),
-        time:  extractTimeStr(row.entry_time),
-        notes: row.notes_entry || ''
+        date:     formatDateTZ(row.entry_date, spreadsheetTZ),
+        time:     extractTimeStr(row.entry_time),
+        notes:    row.notes_entry || '',
+        location: row.location || ''
+      });
+    }
+  }
+
+  history.sort(function(a, b) {
+    var d = b.date.localeCompare(a.date);
+    return d !== 0 ? d : b.time.localeCompare(a.time);
+  });
+
+  return { history: history };
+}
+
+/**
+ * Gets entry history for a person.
+ *
+ * @param {string} personId
+ * @returns {{ history: Array<{ date: string, time: string, notes: string, location: string }> }}
+ */
+function getPersonHistory(personId) {
+  if (!personId) throw new Error('personId is required');
+
+  var spreadsheetTZ = SpreadsheetApp.openById(SHEET_ID).getSpreadsheetTimeZone();
+  var sheet   = getSheet('Entries');
+  var data    = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var history = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = rowToObject(headers, data[i]);
+    if (row.person_id === personId) {
+      history.push({
+        date:     formatDateTZ(row.entry_date, spreadsheetTZ),
+        time:     extractTimeStr(row.entry_time),
+        notes:    row.notes_entry || '',
+        location: row.location || ''
       });
     }
   }

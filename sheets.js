@@ -454,10 +454,20 @@ const DataStore = (() => {
      * Gets entry history for a vehicle.
      *
      * @param {string} vehicleId
-     * @returns {Promise<{ history: Array<{ date: string, time: string }> }>}
+     * @returns {Promise<{ history: Array<{ date: string, time: string, notes: string, location: string }> }>}
      */
     async getVehicleHistory(vehicleId) {
       return apiGet('getVehicleHistory', { vehicleId });
+    },
+
+    /**
+     * Gets entry history for a person.
+     *
+     * @param {string} personId
+     * @returns {Promise<{ history: Array<{ date: string, time: string, notes: string, location: string }> }>}
+     */
+    async getPersonHistory(personId) {
+      return apiGet('getPersonHistory', { personId });
     },
 
     /**

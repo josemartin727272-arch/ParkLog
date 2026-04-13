@@ -41,8 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Shared */
   const vehicleStatus  = document.getElementById('vehicle-status');
   const notesInput     = document.getElementById('notes-input');
-  const locationError  = document.getElementById('location-error');
-  const locationBtns   = document.querySelectorAll('[data-location]');
+  const locationError   = document.getElementById('location-error');
+  const locationWarning = document.getElementById('location-warning');
+  const locationBtns    = document.querySelectorAll('[data-location]');
   const charCount     = document.getElementById('char-count');
   const submitBtn     = document.getElementById('submit-btn');
   const confirmation  = document.getElementById('confirmation');
@@ -55,9 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentUser     = '';
   let selectedTipo    = CONFIG.DEFAULT_VEHICLE_TYPE; // 'auto' | 'moto' | 'persona'
   let selectedLocation = '';                         // 'central' | 'small' | 'environ'
-  let currentVehicle  = null; // { isNew, vehicle } from vehicle lookup
-  let currentPerson   = null; // { found, person_id, firstName, ... } from person lookup
-  let lookupTimer     = null;
+  let currentVehicle      = null; // { isNew, vehicle } from vehicle lookup
+  let currentPerson       = null; // { found, person_id, firstName, ... } from person lookup
+  let currentTodayLocations = []; // locations of today's entries for the current known entity
+  let lookupTimer         = null;
   let lookupGeneration = 0;
   let submitCooldown  = false;
 
@@ -200,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.setAttribute('aria-checked', 'true');
       selectedLocation = btn.dataset.location;
       locationError.classList.add('hidden');
+      checkAndShowDuplicateWarning();
       updateSubmitState();
     });
   });
@@ -218,6 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
     hideStatus();
     currentVehicle = null;
     currentPerson  = null;
+    currentTodayLocations = [];
+    locationWarning.classList.add('hidden');
     clearTimeout(lookupTimer);
 
     if (isPersona) {
@@ -359,7 +364,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await DataStore.searchVehicle(placa);
       if (gen !== lookupGeneration) return;
       currentVehicle = result;
+      currentTodayLocations = [];
+      locationWarning.classList.add('hidden');
       showStatusBadge(result.isNew, result.vehicle, 'vehicle');
+      if (!result.isNew && result.vehicle?.vehicleId) {
+        fetchTodayLocations('vehicle', result.vehicle.vehicleId);
+      }
     } catch {
       if (gen !== lookupGeneration) return;
       currentVehicle = { isNew: null, vehicle: null };
@@ -397,7 +407,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await DataStore.lookupPerson(idNumber);
       if (gen !== lookupGeneration) return;
       currentPerson = result;
+      currentTodayLocations = [];
+      locationWarning.classList.add('hidden');
       showStatusBadge(!result.found, result.found ? result : null, 'persona');
+      if (result.found && result.person_id) {
+        fetchTodayLocations('persona', result.person_id);
+      }
     } catch {
       if (gen !== lookupGeneration) return;
       currentPerson = { found: null };
@@ -897,9 +912,11 @@ document.addEventListener('DOMContentLoaded', () => {
     charCount.textContent = '0';
     currentVehicle = null;
     currentPerson  = null;
+    currentTodayLocations = [];
     selectedLocation = '';
     locationBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
     locationError.classList.add('hidden');
+    locationWarning.classList.add('hidden');
     hideError();
     hideIdError();
     hideStatus();
@@ -968,6 +985,13 @@ document.addEventListener('DOMContentLoaded', () => {
           item.appendChild(dateEl);
           item.appendChild(timeEl);
 
+          if (entry.location) {
+            const locEl = document.createElement('span');
+            locEl.className = 've-history-location';
+            locEl.textContent = locationLabel(entry.location);
+            item.appendChild(locEl);
+          }
+
           if (entry.notes) {
             const noteEl = document.createElement('span');
             noteEl.className = 've-history-note';
@@ -995,13 +1019,14 @@ document.addEventListener('DOMContentLoaded', () => {
   async function copyHistoryTable() {
     if (_historyData.length === 0) return;
     const plate = veHistoryPlate.textContent || '';
-    const header = `${plate}\n${'תאריך'.padEnd(12)}${'שעה'.padEnd(8)}הערה`;
+    const header = `${plate}\n${'תאריך'.padEnd(12)}${'שעה'.padEnd(8)}${'מיקום'.padEnd(18)}הערה`;
     const rows = _historyData.map(e => {
       const dateOnly = e.date ? String(e.date).substring(0, 10) : '';
       const dateStr = dateOnly.match(/^\d{4}-\d{2}-\d{2}$/)
         ? dateOnly.split('-').reverse().join('/')
         : (e.date || '');
-      return `${dateStr.padEnd(12)}${(e.time || '').padEnd(8)}${e.notes || ''}`;
+      const locStr = e.location ? locationLabel(e.location) : '';
+      return `${dateStr.padEnd(12)}${(e.time || '').padEnd(8)}${locStr.padEnd(18)}${e.notes || ''}`;
     });
     const text = [header, ...rows].join('\n');
 
@@ -1022,6 +1047,66 @@ document.addEventListener('DOMContentLoaded', () => {
       veHistoryCopy.textContent = '✓ הועתק';
       setTimeout(() => { veHistoryCopy.textContent = orig; }, 2000);
     }
+  }
+
+  /* ══════════════════════════════════════════
+     Duplicate Location Check
+     ══════════════════════════════════════════ */
+
+  /**
+   * Fetches today's entry locations for a known vehicle or person in the background.
+   * Stores results in currentTodayLocations and re-checks the warning.
+   * @param {'vehicle'|'persona'} type
+   * @param {string} id - vehicleId or person_id
+   */
+  async function fetchTodayLocations(type, id) {
+    try {
+      let history;
+      if (type === 'vehicle') {
+        const res = await DataStore.getVehicleHistory(id);
+        history = res.history || [];
+      } else {
+        const res = await DataStore.getPersonHistory(id);
+        history = res.history || [];
+      }
+      const today = _todayStr();
+      currentTodayLocations = history
+        .filter(e => {
+          const d = e.date ? String(e.date).substring(0, 10) : '';
+          return d === today && e.location;
+        })
+        .map(e => e.location);
+    } catch {
+      currentTodayLocations = [];
+    }
+    if (selectedLocation) checkAndShowDuplicateWarning();
+  }
+
+  /**
+   * Shows a warning if the selected location differs from any of today's existing entries.
+   */
+  function checkAndShowDuplicateWarning() {
+    if (!selectedLocation || currentTodayLocations.length === 0) {
+      locationWarning.classList.add('hidden');
+      return;
+    }
+    const hasDifferent = currentTodayLocations.some(loc => loc !== selectedLocation);
+    if (hasDifferent) {
+      locationWarning.textContent = t('entry.location.warning');
+      locationWarning.classList.remove('hidden');
+    } else {
+      locationWarning.classList.add('hidden');
+    }
+  }
+
+  /**
+   * Returns a translated display label for a location key.
+   * @param {string} loc - 'central' | 'small' | 'environ'
+   * @returns {string}
+   */
+  function locationLabel(loc) {
+    const map = { central: t('entry.location.central'), small: t('entry.location.small'), environ: t('entry.location.environ') };
+    return map[loc] || loc;
   }
 
   /* ══════════════════════════════════════════
