@@ -475,12 +475,14 @@ document.addEventListener('DOMContentLoaded', () => {
           entry: { entryTime: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) }
         };
       } else {
-        result = await DataStore.saveEntry({
+        const vehiclePayload = {
           placa, tipo: selectedTipo,
           notes: notesInput.value.trim(),
           location: selectedLocation,
           createdBy, entryDate: _todayStr()
-        });
+        };
+        console.log('[ParkLog] saveEntry payload:', JSON.stringify(vehiclePayload));
+        result = await DataStore.saveEntry(vehiclePayload);
       }
 
       if (result.queued) {
@@ -538,12 +540,14 @@ document.addEventListener('DOMContentLoaded', () => {
           person: { firstName, lastName, idNumber, totalVisits: 1 }
         };
       } else {
-        result = await DataStore.savePersonEntry({
+        const personPayload = {
           firstName, lastName, idNumber,
           notes: notesInput.value.trim(),
           location: selectedLocation,
           createdBy, entryDate: _todayStr()
-        });
+        };
+        console.log('[ParkLog] savePersonEntry payload:', JSON.stringify(personPayload));
+        result = await DataStore.savePersonEntry(personPayload);
       }
 
       const displayName = `${firstName} ${lastName}`;
