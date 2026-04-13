@@ -9,7 +9,7 @@ const CONFIG = {
    * Set after Apps Script deployment (see SETUP_INSTRUCTIONS_HE.md)
    * Example: https://script.google.com/macros/s/AKfycby.../exec
    */
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwBw3cSF0XA74lg53aQ8R23kGT-QPU2IFRa1ItM60upvJscI7XZz67LlD_ZC1pC0MWaDQ/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxs5zZoJDt5XrCCUox46W1k7-pzqOO8pyw2rSo2KxHu554ySSc4lMZWHt52Fx0VNychEA/exec',
 
   /**
    * App version — bump this to invalidate all stored sessions and localStorage.
