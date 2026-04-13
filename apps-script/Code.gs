@@ -395,6 +395,7 @@ function getVehicleHistory(vehicleId) {
   var sheet   = getSheet('Entries');
   var data    = sheet.getDataRange().getValues();
   var headers = data[0];
+  var locIdx  = headers.indexOf('location');  // -1 on legacy sheets without the column
   var history = [];
 
   for (var i = 1; i < data.length; i++) {
@@ -404,7 +405,7 @@ function getVehicleHistory(vehicleId) {
         date:     formatDateTZ(row.entry_date, spreadsheetTZ),
         time:     extractTimeStr(row.entry_time),
         notes:    row.notes_entry || '',
-        location: row.location || ''
+        location: locIdx >= 0 ? (data[i][locIdx] || '') : ''
       });
     }
   }
@@ -430,6 +431,7 @@ function getPersonHistory(personId) {
   var sheet   = getSheet('Entries');
   var data    = sheet.getDataRange().getValues();
   var headers = data[0];
+  var locIdx  = headers.indexOf('location');  // -1 on legacy sheets without the column
   var history = [];
 
   for (var i = 1; i < data.length; i++) {
@@ -439,7 +441,7 @@ function getPersonHistory(personId) {
         date:     formatDateTZ(row.entry_date, spreadsheetTZ),
         time:     extractTimeStr(row.entry_time),
         notes:    row.notes_entry || '',
-        location: row.location || ''
+        location: locIdx >= 0 ? (data[i][locIdx] || '') : ''
       });
     }
   }
@@ -463,12 +465,19 @@ function getTodayLocationsForVehicle(vehicleId) {
   var sheet = getSheet('Entries');
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
+  var vidIdx  = headers.indexOf('vehicle_id');
+  var dateIdx = headers.indexOf('entry_date');
+  var locIdx  = headers.indexOf('location');
   var locations = [];
 
+  if (locIdx < 0) return locations;  // location column not in sheet yet
+
   for (var i = 1; i < data.length; i++) {
-    var row = rowToObject(headers, data[i]);
-    if (row.vehicle_id === vehicleId && formatDate(row.entry_date) === today && row.location) {
-      locations.push(row.location);
+    var vid      = vidIdx  >= 0 ? data[i][vidIdx]  : '';
+    var entryDate = dateIdx >= 0 ? formatDate(data[i][dateIdx]) : '';
+    var loc      = data[i][locIdx] || '';
+    if (vid === vehicleId && entryDate === today && loc) {
+      locations.push(loc);
     }
   }
   return locations;
@@ -485,12 +494,19 @@ function getTodayLocationsForPerson(personId) {
   var sheet = getSheet('Entries');
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
+  var pidIdx  = headers.indexOf('person_id');
+  var dateIdx = headers.indexOf('entry_date');
+  var locIdx  = headers.indexOf('location');
   var locations = [];
 
+  if (locIdx < 0) return locations;  // location column not in sheet yet
+
   for (var i = 1; i < data.length; i++) {
-    var row = rowToObject(headers, data[i]);
-    if (row.person_id === personId && formatDate(row.entry_date) === today && row.location) {
-      locations.push(row.location);
+    var pid       = pidIdx  >= 0 ? data[i][pidIdx]  : '';
+    var entryDate = dateIdx >= 0 ? formatDate(data[i][dateIdx]) : '';
+    var loc       = data[i][locIdx] || '';
+    if (pid === personId && entryDate === today && loc) {
+      locations.push(loc);
     }
   }
   return locations;
