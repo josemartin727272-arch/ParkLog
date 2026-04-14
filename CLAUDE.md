@@ -100,7 +100,7 @@ ParkLog/
 | G | created_by | String | No | Display name of logged-in user |
 | H | person_id | String | No | FK to Persons; blank for vehicle entries. **Header cell is blank in live sheet** |
 | I | entry_type | String | Yes | `vehicle` (default) or `persona` |
-| J | location | String | Yes | `central`, `small`, or `environ` — station where entry was recorded |
+| J | location | String | Yes | `large`, `small`, or `public` — station where entry was recorded |
 
 ### Sheet 3: Persons (one row per unique person)
 | Field | Type | Required | Notes |
@@ -134,10 +134,10 @@ ParkLog/
 
 ### Location Field
 All entries (vehicle and persona) require a location — the station where the entry is recorded.
-- Three valid values: `central` (תחנה מרכזית / Estación Central), `small` (תחנה קטנה / Estación Pequeña), `environ` (תחנת סביבה / Estación Entorno)
+- Three valid values: `large` (חניון גדול / Estacionamiento Grande), `small` (חניון קטן / Estacionamiento Pequeño), `public` (חניון ציבורי / Estacionamiento Público)
 - Stored in Entries sheet column J
 - **Duplicate location warning**: red banner shown in VaultEntry when the same vehicle/person already has an entry today at a *different* station. Uses `currentTodayLocations[]` loaded from `searchVehicle`/`lookupPerson` responses — embedded in the response to avoid a separate async fetch.
-- **Known badge today station**: if `currentTodayLocations` is non-empty, the known vehicle/person badge shows the station already registered today (e.g., "נרשם היום ב: תחנה מרכזית").
+- **Known badge today station**: if `currentTodayLocations` is non-empty, the known vehicle/person badge shows the station already registered today (e.g., "נרשם היום ב: חניון גדול").
 
 ### New Vehicle Detection Logic
 A vehicle is "new" when it does NOT exist in the Vehicles sheet at the moment of entry.
@@ -354,7 +354,7 @@ Friendly icons where appropriate.
 - Error messages: red text + icon, below the field
 - Success feedback: green confirmation with checkmark
 - **Entry types**: 🚗 auto, 🛵 moto, 🚶 persona — toggle group selector, wraps on mobile
-- **Location field**: required selector (תחנה מרכזית / תחנה קטנה / תחנת סביבה) on all entries
+- **Location field**: required selector (חניון גדול / חניון קטן / חניון ציבורי) on all entries
 - **Clear (✕) button**: inside the plate/ID input field — resets field and badge without clearing other fields
 - **New vehicle badge**: 🟢 bright green badge, immediately visible after plate lookup
 - **Known vehicle badge**: 🔵 blue badge with last seen date + today's station if already registered today

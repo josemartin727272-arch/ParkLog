@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── State ── */
   let currentUser     = '';
   let selectedTipo    = CONFIG.DEFAULT_VEHICLE_TYPE; // 'auto' | 'moto' | 'persona'
-  let selectedLocation = '';                         // 'central' | 'small' | 'environ'
+  let selectedLocation = '';                         // 'large' | 'small' | 'public'
   let currentVehicle      = null; // { isNew, vehicle } from vehicle lookup
   let currentPerson       = null; // { found, person_id, firstName, ... } from person lookup
   let currentTodayLocations = []; // locations of today's entries for the current known entity
@@ -1084,11 +1084,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Returns a translated display label for a location key.
-   * @param {string} loc - 'central' | 'small' | 'environ'
+   * @param {string} loc - 'large' | 'small' | 'public'
    * @returns {string}
    */
   function locationLabel(loc) {
-    const map = { central: t('entry.location.central'), small: t('entry.location.small'), environ: t('entry.location.environ') };
+    const map = { large: t('entry.location.large'), small: t('entry.location.small'), public: t('entry.location.public') };
     return map[loc] || loc;
   }
 
