@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const vehicleStatus  = document.getElementById('vehicle-status');
   const notesInput     = document.getElementById('notes-input');
   const locationError   = document.getElementById('location-error');
-  const locationWarning = document.getElementById('location-warning');
   const locationBtns    = document.querySelectorAll('[data-location]');
   const charCount     = document.getElementById('char-count');
   const submitBtn     = document.getElementById('submit-btn');
@@ -222,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentVehicle = null;
     currentPerson  = null;
     currentTodayLocations = [];
-    locationWarning.classList.add('hidden');
+
     clearTimeout(lookupTimer);
 
     if (isPersona) {
@@ -365,10 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gen !== lookupGeneration) return;
       currentVehicle = result;
       currentTodayLocations = result.todayLocations || [];
-      locationWarning.classList.add('hidden');
+  
       showStatusBadge(result.isNew, result.vehicle, 'vehicle');
       if (!result.isNew && selectedLocation) {
-        checkAndShowDuplicateWarning();
+        refreshBadgeIfNeeded();
       }
     } catch {
       if (gen !== lookupGeneration) return;
@@ -408,10 +407,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gen !== lookupGeneration) return;
       currentPerson = result;
       currentTodayLocations = result.todayLocations || [];
-      locationWarning.classList.add('hidden');
+  
       showStatusBadge(!result.found, result.found ? result : null, 'persona');
       if (result.found && selectedLocation) {
-        checkAndShowDuplicateWarning();
+        refreshBadgeIfNeeded();
       }
     } catch {
       if (gen !== lookupGeneration) return;
@@ -944,7 +943,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedLocation = '';
     locationBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
     locationError.classList.add('hidden');
-    locationWarning.classList.add('hidden');
+
     hideError();
     hideIdError();
     hideStatus();
@@ -1093,13 +1092,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /**
-   * Legacy — kept as no-op so callers don't break.
-   * @deprecated Duplicate warning now rendered inside the badge.
-   */
-  function checkAndShowDuplicateWarning() {
-    refreshBadgeIfNeeded();
-  }
 
   /**
    * Returns a translated display label for a location key.
