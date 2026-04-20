@@ -596,6 +596,23 @@ h4 { font-size: 1.125rem; }
   border: 2px solid var(--color-info);
 }
 
+.status-card.status-duplicate {
+  background: #FEF2F2;
+  border: 2px solid var(--color-danger);
+}
+
+.status-card.status-duplicate .status-text {
+  color: var(--color-danger);
+}
+
+.status-card.status-duplicate .status-duplicate-locations {
+  font-weight: 600;
+  color: var(--color-danger);
+  font-size: 0.8125rem;
+  margin-block-start: 2px;
+  word-wrap: break-word;
+}
+
 .status-card .status-icon {
   font-size: 1.5rem;
   flex-shrink: 0;

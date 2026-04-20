@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.setAttribute('aria-checked', 'true');
       selectedLocation = btn.dataset.location;
       locationError.classList.add('hidden');
-      checkAndShowDuplicateWarning();
+      refreshBadgeIfNeeded();
       updateSubmitState();
     });
   });
@@ -365,8 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gen !== lookupGeneration) return;
       currentVehicle = result;
       currentTodayLocations = result.todayLocations || [];
-      // DEBUG: duplicate location investigation — remove after fix
-      console.log('[DuplicateCheck:vehicle]', { isNew: result.isNew, todayLocations: result.todayLocations, selectedLocation, result });
       locationWarning.classList.add('hidden');
       showStatusBadge(result.isNew, result.vehicle, 'vehicle');
       if (!result.isNew && selectedLocation) {
@@ -410,8 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gen !== lookupGeneration) return;
       currentPerson = result;
       currentTodayLocations = result.todayLocations || [];
-      // DEBUG: duplicate location investigation — remove after fix
-      console.log('[DuplicateCheck:persona]', { found: result.found, todayLocations: result.todayLocations, selectedLocation, result });
       locationWarning.classList.add('hidden');
       showStatusBadge(!result.found, result.found ? result : null, 'persona');
       if (result.found && selectedLocation) {
@@ -761,12 +757,19 @@ document.addEventListener('DOMContentLoaded', () => {
     vehicleStatus.innerHTML = '';
     vehicleStatus.classList.remove('hidden');
 
+    const hasDuplicate = !isNew && currentTodayLocations.length > 0 && selectedLocation &&
+      currentTodayLocations.some(loc => loc !== selectedLocation);
+
     const card = document.createElement('div');
-    card.className = 'status-card ' + (isNew ? 'status-new' : 'status-known');
+    if (hasDuplicate) {
+      card.className = 'status-card status-duplicate';
+    } else {
+      card.className = 'status-card ' + (isNew ? 'status-new' : 'status-known');
+    }
 
     const icon = document.createElement('span');
     icon.className = 'status-icon';
-    icon.textContent = isNew ? '🟢' : '🔵';
+    icon.textContent = hasDuplicate ? '🔴' : (isNew ? '🟢' : '🔵');
 
     const textDiv = document.createElement('div');
 
@@ -781,6 +784,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     textDiv.appendChild(mainText);
 
+    /* Duplicate location warning line */
+    if (hasDuplicate) {
+      const uniqueOtherLocs = [...new Set(currentTodayLocations.filter(loc => loc !== selectedLocation))];
+      const locLine = document.createElement('div');
+      locLine.className = 'status-duplicate-locations';
+      locLine.textContent = `⚠️ ${t('badge.known.todayStation')}: ${uniqueOtherLocs.map(l => locationLabel(l)).join(', ')}`;
+      textDiv.appendChild(locLine);
+    }
+
     if (!isNew && data) {
       const detail = document.createElement('div');
       detail.className = 'status-detail';
@@ -790,8 +802,8 @@ document.addEventListener('DOMContentLoaded', () => {
       detail.textContent = `${t('badge.known.lastSeen')}: ${lastSeenDisplay} — ${data.totalVisits} ${t('badge.known.totalVisits')}`;
       textDiv.appendChild(detail);
 
-      /* Today's station line */
-      if (currentTodayLocations.length > 0) {
+      /* Today's station line (only if NOT duplicate — duplicate already shows locations) */
+      if (!hasDuplicate && currentTodayLocations.length > 0) {
         const todayStation = document.createElement('div');
         todayStation.className = 'status-detail';
         todayStation.textContent = `${t('badge.known.todayStation')}: ${locationLabel(currentTodayLocations[0])}`;
@@ -1066,24 +1078,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ══════════════════════════════════════════
-     Duplicate Location Check
+     Duplicate Location Check (via badge re-render)
      ══════════════════════════════════════════ */
 
   /**
-   * Shows a warning if the selected location differs from any of today's existing entries.
+   * Re-renders the status badge to reflect duplicate-location state.
+   * Called when the user selects a location after plate/person lookup.
+   */
+  function refreshBadgeIfNeeded() {
+    if (currentVehicle && !currentVehicle.isNew && currentVehicle.vehicle) {
+      showStatusBadge(false, currentVehicle.vehicle, 'vehicle');
+    } else if (currentPerson && currentPerson.found) {
+      showStatusBadge(false, currentPerson, 'persona');
+    }
+  }
+
+  /**
+   * Legacy — kept as no-op so callers don't break.
+   * @deprecated Duplicate warning now rendered inside the badge.
    */
   function checkAndShowDuplicateWarning() {
-    if (!selectedLocation || currentTodayLocations.length === 0) {
-      locationWarning.classList.add('hidden');
-      return;
-    }
-    const hasDifferent = currentTodayLocations.some(loc => loc !== selectedLocation);
-    if (hasDifferent) {
-      locationWarning.textContent = t('entry.location.warning');
-      locationWarning.classList.remove('hidden');
-    } else {
-      locationWarning.classList.add('hidden');
-    }
+    refreshBadgeIfNeeded();
   }
 
   /**
