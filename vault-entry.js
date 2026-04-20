@@ -365,6 +365,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gen !== lookupGeneration) return;
       currentVehicle = result;
       currentTodayLocations = result.todayLocations || [];
+      // DEBUG: duplicate location investigation — remove after fix
+      console.log('[DuplicateCheck:vehicle]', { isNew: result.isNew, todayLocations: result.todayLocations, selectedLocation, result });
       locationWarning.classList.add('hidden');
       showStatusBadge(result.isNew, result.vehicle, 'vehicle');
       if (!result.isNew && selectedLocation) {
@@ -408,6 +410,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gen !== lookupGeneration) return;
       currentPerson = result;
       currentTodayLocations = result.todayLocations || [];
+      // DEBUG: duplicate location investigation — remove after fix
+      console.log('[DuplicateCheck:persona]', { found: result.found, todayLocations: result.todayLocations, selectedLocation, result });
       locationWarning.classList.add('hidden');
       showStatusBadge(!result.found, result.found ? result : null, 'persona');
       if (result.found && selectedLocation) {
