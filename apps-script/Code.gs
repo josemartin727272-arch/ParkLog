@@ -1091,7 +1091,7 @@ function getSheet(name) {
     if (name === 'Vehicles') {
       sheet.appendRow(['vehicle_id', 'placa', 'tipo', 'first_seen', 'last_seen', 'total_visits', 'notes', 'created_by', 'notes_updated']);
     } else if (name === 'Entries') {
-      sheet.appendRow(['entry_id', 'vehicle_id', 'placa', 'entry_date', 'entry_time', 'notes_entry', 'created_by', 'entry_type', 'person_id', 'location']);
+      sheet.appendRow(['entry_id', 'vehicle_id', 'placa', 'entry_date', 'entry_time', 'notes_entry', 'created_by', 'person_id', 'entry_type', 'location']);
     } else if (name === 'VisitLog') {
       sheet.appendRow(['placa', 'tipo', 'visit_date', 'visit_time', 'created_by']);
     } else if (name === 'Persons') {
@@ -1359,3 +1359,4 @@ function clearDailyColors() {
 
   Logger.log('Daily colors cleared: ' + new Date().toISOString());
 }
+
