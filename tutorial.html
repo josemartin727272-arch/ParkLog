@@ -15,11 +15,18 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 
     /* NAV */
-    .toc { position: sticky; top: 0; z-index: 100; background: var(--primary); padding: 10px 16px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; align-items: center; }
-    .toc::-webkit-scrollbar { display: none; }
+    .toc { position: sticky; top: 0; z-index: 100; background: var(--primary); padding: 10px 16px; display: flex; gap: 6px; align-items: center; }
+    /* Only the section links scroll — the back button and lang toggle stay pinned */
+    .toc-links { display: flex; gap: 6px; align-items: center; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .toc-links::-webkit-scrollbar { display: none; }
     .toc a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.78rem; font-weight: 600; white-space: nowrap; padding: 4px 10px; border-radius: 20px; transition: all .2s; }
     .toc a:hover { color: #fff; background: rgba(255,255,255,0.15); }
-    .toc-spacer { flex: 1; }
+    /* Back button — mirrors .header-left/.header-back in style.css, which this
+       self-contained page does not load. */
+    .header-left { display: flex; align-items: center; flex-shrink: 0; }
+    .toc .header-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; flex-shrink: 0; color: #fff; text-decoration: none; padding: 0; border-radius: 20px; }
+    .toc .header-back:hover { background: rgba(255,255,255,0.15); }
+    [dir="rtl"] .header-back svg { transform: scaleX(-1); }
     .lang-toggle-tut { display: inline-flex; flex-direction: row !important; direction: ltr !important; gap: 4px; flex-shrink: 0; }
     .lang-btn { color: rgba(255,255,255,0.65); background: none; border: 1.5px solid rgba(255,255,255,0.3); font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; cursor: pointer; transition: all .2s; white-space: nowrap; }
     .lang-btn.active { color: #fff; background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.7); }
@@ -149,6 +156,12 @@
 
 <!-- NAV -->
 <nav class="toc">
+  <div class="header-left">
+    <a href="index2.html" class="header-back" aria-label="Back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </a>
+  </div>
+  <div class="toc-links">
   <a href="#s0" data-t="nav.s0">🏠 דף הבית</a>
   <a href="#s1" data-t="nav.s1">🔐 כניסה</a>
   <a href="#s2" data-t="nav.s2">🟢 רכב חדש</a>
@@ -157,7 +170,7 @@
   <a href="#s5" data-t="nav.s5">📝 רשימת סשן</a>
   <a href="#s6" data-t="nav.s6">📊 דשבורד</a>
   <a href="#s7" data-t="nav.s7">🚗 ניהול רכבים</a>
-  <div class="toc-spacer"></div>
+  </div>
   <div class="lang-toggle-tut">
     <button class="lang-btn" data-lang="es" onclick="switchLang('es')">ES 🇪🇸</button>
     <button class="lang-btn active" data-lang="he" onclick="switchLang('he')">HE 🇮🇱</button>

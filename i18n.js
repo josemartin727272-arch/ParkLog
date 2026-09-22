@@ -48,6 +48,11 @@ const TRANSLATIONS = {
     'badge.known.clickHistory': '🔍 Toca para ver historial de visitas',
     'badge.known.todayStation': 'Registrado hoy en',
 
+    /* SUNARP — Peru's public vehicle registry lookup */
+    'sunarp.button': 'Consultar en SUNARP',
+    'sunarp.copied': 'Placa copiada — pégala en el sitio de SUNARP',
+    'sunarp.copyFailed': 'No se pudo copiar. Placa: #{plate}',
+
     /* ── Session List ── */
     'session.title': 'Vehículos en esta sesión',
     'session.empty': 'Aún no hay vehículos en esta sesión',
@@ -255,6 +260,11 @@ const TRANSLATIONS = {
     'badge.known.totalVisits': 'ביקורים בסה"כ',
     'badge.known.clickHistory': '🔍 לחץ לצפייה בהיסטוריית ביקורים',
     'badge.known.todayStation': 'נרשם היום ב',
+
+    /* SUNARP — מרשם הרכב הציבורי של פרו */
+    'sunarp.button': 'בדיקה ב-SUNARP',
+    'sunarp.copied': 'הלוחית הועתקה — הדבק באתר SUNARP',
+    'sunarp.copyFailed': 'ההעתקה נכשלה. לוחית: #{plate}',
 
     /* ── Session List ── */
     'session.title': 'רכבים בסשן זה',

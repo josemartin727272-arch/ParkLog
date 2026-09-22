@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Shared */
   const vehicleStatus  = document.getElementById('vehicle-status');
+  const sunarpWrap     = document.getElementById('sunarp-wrap');
+  const sunarpBtn      = document.getElementById('sunarp-btn');
   const notesInput     = document.getElementById('notes-input');
   const locationError   = document.getElementById('location-error');
   const locationBtns    = document.querySelectorAll('[data-location]');
@@ -235,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
       placaInput.focus();
     }
 
+    updateSunarpVisibility();
     updateSubmitState();
   }
 
@@ -252,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideError();
     hideStatus();
     currentVehicle = null;
+    updateSunarpVisibility();
     updateSubmitState();
 
     clearTimeout(lookupTimer);
@@ -279,8 +283,62 @@ document.addEventListener('DOMContentLoaded', () => {
     hideStatus();
     currentVehicle = null;
     clearTimeout(lookupTimer);
+    updateSunarpVisibility();
     updateSubmitState();
     placaInput.focus();
+  });
+
+  /* ══════════════════════════════════════════
+     SUNARP Lookup
+     ══════════════════════════════════════════ */
+
+  /** @const {string} Peru's public vehicle registry lookup page. */
+  const SUNARP_URL = 'https://consultavehicular.sunarp.gob.pe/consulta-vehicular/inicio';
+
+  /**
+   * Normalizes a plate for SUNARP: uppercase, no spaces or hyphens.
+   *
+   * @param {string} placa
+   * @returns {string}
+   */
+  function normalizePlacaForSunarp(placa) {
+    return placa.toUpperCase().replace(/[\s-]/g, '');
+  }
+
+  /**
+   * Shows the SUNARP button only for vehicle entries that have a usable plate.
+   * @returns {void}
+   */
+  function updateSunarpVisibility() {
+    const show = selectedTipo !== 'persona' &&
+      placaInput.value.trim().length >= CONFIG.PLACA_MIN_LENGTH;
+    sunarpWrap.classList.toggle('hidden', !show);
+  }
+
+  sunarpBtn.addEventListener('click', () => {
+    const plate = normalizePlacaForSunarp(placaInput.value.trim());
+    if (!plate) return;
+
+    /* Both calls stay in this tap's synchronous turn — never await between
+       them, or iOS Safari drops the gesture and blocks the popup.
+       navigator.clipboard is also undefined on insecure origins, so the call
+       itself is guarded, not just the promise it returns. */
+    let write = null;
+    try {
+      write = navigator.clipboard.writeText(plate);
+    } catch { /* handled below, after the site opens */ }
+
+    window.open(SUNARP_URL, '_blank', 'noopener');
+
+    if (!write) {
+      showToast(t('sunarp.copyFailed', { plate }), 'warning');
+      return;
+    }
+
+    write.then(
+      () => showToast(t('sunarp.copied'), 'success'),
+      () => showToast(t('sunarp.copyFailed', { plate }), 'warning')
+    );
   });
 
   /* ══════════════════════════════════════════
@@ -940,13 +998,15 @@ document.addEventListener('DOMContentLoaded', () => {
     currentVehicle = null;
     currentPerson  = null;
     currentTodayLocations = [];
-    selectedLocation = '';
-    locationBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
+    /* selectedLocation is deliberately NOT cleared — an employee works one
+       station for a whole shift, so the choice persists across saves.
+       In-memory only: a reload starts with no station selected. */
     locationError.classList.add('hidden');
 
     hideError();
     hideIdError();
     hideStatus();
+    updateSunarpVisibility();
     updateSubmitState();
     /* Focus the primary input for the current mode */
     if (selectedTipo === 'persona') {

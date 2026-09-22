@@ -42,7 +42,7 @@
 
   <!-- Header -->
   <header class="page-header">
-    <div>
+    <div class="header-left">
       <a href="index2.html" class="header-back" aria-label="Back">
         <i data-lucide="arrow-left" style="width:20px;height:20px;color:#fff"></i>
       </a>
@@ -70,7 +70,24 @@
       <!-- Entry Form Card -->
       <div class="card ve-form-card">
 
-        <!-- Tipo Field — FIRST, determines which identifier fields appear -->
+        <!-- Location Field — FIRST, the station stays selected across saves -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="entry.location.label">Ubicación</label>
+          <div class="toggle-group" role="radiogroup" aria-label="Location">
+            <button type="button" class="toggle-option" data-location="large" role="radio" aria-checked="false">
+              <span data-i18n="entry.location.large">Estacionamiento Grande</span>
+            </button>
+            <button type="button" class="toggle-option" data-location="small" role="radio" aria-checked="false">
+              <span data-i18n="entry.location.small">Estacionamiento Pequeño</span>
+            </button>
+            <button type="button" class="toggle-option" data-location="public" role="radio" aria-checked="false">
+              <span data-i18n="entry.location.public">Estacionamiento Público</span>
+            </button>
+          </div>
+          <div id="location-error" class="form-error hidden" role="alert"></div>
+        </div>
+
+        <!-- Tipo Field — determines which identifier fields appear -->
         <div class="form-group">
           <label class="form-label" data-i18n="entry.tipo.label">Tipo de Vehículo</label>
           <div class="toggle-group" role="radiogroup" aria-label="Entry type">
@@ -161,6 +178,15 @@
         <!-- Vehicle / Person Status Badge -->
         <div id="vehicle-status" class="hidden" role="status" aria-live="polite"></div>
 
+        <!-- SUNARP lookup — outside #vehicle-status so it survives badge clearing,
+             and outside the clickable status card so it never opens the history modal -->
+        <div id="sunarp-wrap" class="sunarp-wrap hidden">
+          <button id="sunarp-btn" type="button" class="btn btn-secondary sunarp-btn">
+            <span aria-hidden="true">🔍</span>
+            <span data-i18n="sunarp.button">Consultar en SUNARP</span>
+          </button>
+        </div>
+
         <!-- Notes Field -->
         <div class="form-group">
           <label class="form-label" for="notes-input" data-i18n="entry.notes.label">Observaciones</label>
@@ -175,23 +201,6 @@
           <div class="form-hint">
             <span id="char-count">0</span>/300 <span data-i18n="notes.charCount">caracteres</span>
           </div>
-        </div>
-
-        <!-- Location Field -->
-        <div class="form-group">
-          <label class="form-label" data-i18n="entry.location.label">Ubicación</label>
-          <div class="toggle-group" role="radiogroup" aria-label="Location">
-            <button type="button" class="toggle-option" data-location="large" role="radio" aria-checked="false">
-              <span data-i18n="entry.location.large">Estacionamiento Grande</span>
-            </button>
-            <button type="button" class="toggle-option" data-location="small" role="radio" aria-checked="false">
-              <span data-i18n="entry.location.small">Estacionamiento Pequeño</span>
-            </button>
-            <button type="button" class="toggle-option" data-location="public" role="radio" aria-checked="false">
-              <span data-i18n="entry.location.public">Estacionamiento Público</span>
-            </button>
-          </div>
-          <div id="location-error" class="form-error hidden" role="alert"></div>
         </div>
 
         <!-- Submit Button -->

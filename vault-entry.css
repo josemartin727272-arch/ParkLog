@@ -142,18 +142,21 @@
   border: 2px solid var(--color-info);
 }
 
-/* ── Header layout ── */
-.header-back {
-  display: flex;
-  align-items: center;
-  min-width: 44px;
-  min-height: 44px;
-  justify-content: center;
+/* Header layout (.header-left / .header-back / .header-center) lives in
+   style.css so every page gets the same back button. */
+
+/* ── SUNARP lookup button ── */
+.sunarp-wrap {
+  margin-block-end: var(--space-lg);
 }
 
-.header-center {
-  flex: 1;
-  text-align: center;
+.sunarp-btn {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
 }
 
 /* ── Session List Items with badges ── */
